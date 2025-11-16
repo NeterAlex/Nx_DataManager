@@ -1,0 +1,364 @@
+<Window x:Class="NxDataManager.Views.TaskEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NxDataManager"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}" 
+        Height="700" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}"
+        ResizeMode="CanResize">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="{Binding CurrentTask.Name, FallbackValue='新建任务'}" 
+                               FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="配置备份任务的详细参数" 
+                               FontSize="12" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+            <StackPanel>
+                <!-- 基本信息 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="📝 基本信息" FontSize="16" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                        
+                        <TextBlock Text="任务名称" Margin="0,0,0,6" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBox Text="{Binding CurrentTask.Name, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="14" Padding="12,10"/>
+
+                        <TextBlock Text="源路径（要备份的文件夹）" Margin="0,16,0,6" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding CurrentTask.SourcePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="14" Padding="12,10"/>
+                            <Button Grid.Column="1" Content="📁 浏览..." Margin="8,0,0,0" 
+                                    Padding="16,10" Style="{DynamicResource PrimaryButton}"
+                                    Command="{Binding BrowseSourcePathCommand}"/>
+                        </Grid>
+
+                        <TextBlock Text="目标路径（备份存储位置）" Margin="0,16,0,6" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding CurrentTask.DestinationPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="14" Padding="12,10"/>
+                            <Button Grid.Column="1" Content="📁 浏览..." Margin="8,0,0,0" 
+                                    Padding="16,10" Style="{DynamicResource PrimaryButton}"
+                                    Command="{Binding BrowseDestinationPathCommand}"/>
+                        </Grid>
+
+                        <TextBlock Text="备份类型" Margin="0,16,0,6" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <ComboBox SelectedItem="{Binding CurrentTask.BackupType}" FontSize="14" Padding="12,10">
+                            <ComboBox.ItemsSource>
+                                <x:Array Type="local:BackupType" 
+                                         xmlns:local="clr-namespace:NxDataManager.Models">
+                                    <local:BackupType>Full</local:BackupType>
+                                    <local:BackupType>Incremental</local:BackupType>
+                                    <local:BackupType>Differential</local:BackupType>
+                                </x:Array>
+                            </ComboBox.ItemsSource>
+                        </ComboBox>
+
+                        <CheckBox Content="✅ 启用此任务" IsChecked="{Binding CurrentTask.IsEnabled}" 
+                                  Margin="0,20,0,0" FontSize="14" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 高级功能 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="🔧 高级功能" FontSize="16" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                        
+                        <!-- 压缩 -->
+                        <CheckBox Content="🗜️ 启用压缩" IsChecked="{Binding CurrentTask.EnableCompression}" 
+                                  Margin="0,0,0,12" FontSize="13"/>
+                        <StackPanel Margin="28,0,0,16" IsEnabled="{Binding CurrentTask.EnableCompression}">
+                            <TextBlock Text="压缩级别" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <ComboBox SelectedItem="{Binding CurrentTask.CompressionLevel}" FontSize="13" Padding="10,8">
+                                <ComboBox.ItemsSource>
+                                    <x:Array Type="local:CompressionLevel" 
+                                             xmlns:local="clr-namespace:NxDataManager.Services">
+                                        <local:CompressionLevel>None</local:CompressionLevel>
+                                        <local:CompressionLevel>Fast</local:CompressionLevel>
+                                        <local:CompressionLevel>Normal</local:CompressionLevel>
+                                        <local:CompressionLevel>Maximum</local:CompressionLevel>
+                                    </x:Array>
+                                </ComboBox.ItemsSource>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- 加密 -->
+                        <CheckBox Content="🔐 启用加密 (AES-256)" IsChecked="{Binding CurrentTask.EnableEncryption}" 
+                                  Margin="0,0,0,12" FontSize="13"/>
+                        <StackPanel Margin="28,0,0,16" IsEnabled="{Binding CurrentTask.EnableEncryption}">
+                            <TextBlock Text="加密密码" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <PasswordBox x:Name="EncryptionPasswordBox" 
+                                         FontSize="13" Padding="10,8"
+                                         PasswordChanged="EncryptionPasswordBox_PasswordChanged"/>
+                            <TextBlock Text="⚠️ 请务必记住密码，丢失后无法恢复数据" 
+                                       FontSize="11" Foreground="{DynamicResource WarningBrush}" 
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+
+                        <!-- 版本控制 -->
+                        <CheckBox Content="📁 启用版本控制" IsChecked="{Binding CurrentTask.EnableVersionControl}" 
+                                  Margin="0,0,0,12" FontSize="13"/>
+                        <StackPanel Margin="28,0,0,16" IsEnabled="{Binding CurrentTask.EnableVersionControl}">
+                            <TextBlock Text="保留版本数" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBox Text="{Binding CurrentTask.KeepVersionCount}" FontSize="13" Padding="10,8" Width="150" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <!-- 带宽限制 -->
+                        <CheckBox Content="⚡ 启用带宽限制" IsChecked="{Binding CurrentTask.EnableBandwidthLimit}" 
+                                  Margin="0,0,0,12" FontSize="13"/>
+                        <StackPanel Margin="28,0,0,16" IsEnabled="{Binding CurrentTask.EnableBandwidthLimit}">
+                            <TextBlock Text="限速 (MB/s)" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBox Text="{Binding CurrentTask.BandwidthLimitMBps}" FontSize="13" Padding="10,8" Width="150" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <!-- 断点续传 -->
+                        <CheckBox Content="🔄 启用断点续传" IsChecked="{Binding CurrentTask.EnableResumable}" 
+                                  Margin="0,0,0,0" FontSize="13"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 计划任务 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="⏰ 计划任务" FontSize="16" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                        
+                        <TextBlock Text="计划类型" Margin="0,0,0,6" FontSize="13"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <ComboBox SelectedItem="{Binding CurrentTask.Schedule.Type}" 
+                                  FontSize="14" Padding="12,10" Margin="0,0,0,16"
+                                  SelectionChanged="ScheduleTypeComboBox_SelectionChanged">
+                            <ComboBox.ItemsSource>
+                                <x:Array Type="local:ScheduleType" 
+                                         xmlns:local="clr-namespace:NxDataManager.Models">
+                                    <local:ScheduleType>Manual</local:ScheduleType>
+                                    <local:ScheduleType>Daily</local:ScheduleType>
+                                    <local:ScheduleType>Weekly</local:ScheduleType>
+                                    <local:ScheduleType>Monthly</local:ScheduleType>
+                                    <local:ScheduleType>Interval</local:ScheduleType>
+                                </x:Array>
+                            </ComboBox.ItemsSource>
+                        </ComboBox>
+
+                        <!-- 每天计划配置 -->
+                        <StackPanel x:Name="DailySchedulePanel" 
+                                    Visibility="Collapsed"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="📅 执行时间" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="每天 " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="1" x:Name="DailyHourTextBox" Width="50" Margin="8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <TextBlock Grid.Column="2" Text=" : " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="3" x:Name="DailyMinuteTextBox" Width="50" Margin="0,0,8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <Button Grid.Column="4" Content="现在" Padding="12,6" Margin="8,0,0,0"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="SetCurrentTime_Click"
+                                        ToolTip="设置为当前时间"/>
+                                <TextBlock Grid.Column="5" Text="  (24小时制)" VerticalAlignment="Center" 
+                                           FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- 每周计划配置 -->
+                        <StackPanel x:Name="WeeklySchedulePanel" 
+                                    Visibility="Collapsed"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="📅 星期选择" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="WeeklyMonday" Content="周一" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklyTuesday" Content="周二" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklyWednesday" Content="周三" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklyThursday" Content="周四" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklyFriday" Content="周五" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklySaturday" Content="周六" Margin="0,0,12,8" FontSize="12"/>
+                                <CheckBox x:Name="WeeklySunday" Content="周日" Margin="0,0,12,8" FontSize="12"/>
+                            </WrapPanel>
+                            <TextBlock Text="⏰ 执行时间" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" x:Name="WeeklyHourTextBox" Width="50" Margin="0,0,8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <TextBlock Grid.Column="1" Text=" : " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="2" x:Name="WeeklyMinuteTextBox" Width="50" Margin="8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <Button Grid.Column="3" Content="现在" Padding="12,6" Margin="8,0,0,0"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="SetCurrentTimeWeekly_Click"
+                                        ToolTip="设置为当前时间"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- 每月计划配置 -->
+                        <StackPanel x:Name="MonthlySchedulePanel" 
+                                    Visibility="Collapsed"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="📆 执行日期" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="每月第 " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="1" Text="{Binding CurrentTask.Schedule.DayOfMonth}" 
+                                         Width="60" Margin="8,0" Padding="10,8" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2"/>
+                                <TextBlock Grid.Column="2" Text=" 天 (1-31)" VerticalAlignment="Center" FontSize="13"/>
+                            </Grid>
+                            <TextBlock Text="⏰ 执行时间" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" x:Name="MonthlyHourTextBox" Width="50" Margin="0,0,8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <TextBlock Grid.Column="1" Text=" : " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="2" x:Name="MonthlyMinuteTextBox" Width="50" Margin="8,0" 
+                                         Padding="8,6" FontSize="13" HorizontalContentAlignment="Center"
+                                         MaxLength="2" Text="00"/>
+                                <Button Grid.Column="3" Content="现在" Padding="12,6" Margin="8,0,0,0"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Click="SetCurrentTimeMonthly_Click"
+                                        ToolTip="设置为当前时间"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- 间隔时间配置 -->
+                        <StackPanel x:Name="IntervalSchedulePanel" 
+                                    Visibility="Collapsed"
+                                    Margin="0,0,0,12">
+                            <TextBlock Text="⏱️ 间隔时间" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="每 " VerticalAlignment="Center" FontSize="13"/>
+                                <TextBox Grid.Column="1" Text="{Binding CurrentTask.Schedule.IntervalHours}" 
+                                         Width="80" Margin="8,0" Padding="10,8" FontSize="13" HorizontalContentAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text=" 小时执行一次" VerticalAlignment="Center" FontSize="13"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- 下次执行时间预览 -->
+                        <Border Background="{DynamicResource BackgroundBrush}" 
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                CornerRadius="6" Padding="16,12" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="📅 下次执行时间" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="{Binding CurrentTask.NextRunTime, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}', FallbackValue='手动执行'}" 
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <CheckBox Content="🔄 循环执行" IsChecked="{Binding CurrentTask.Schedule.IsRecurring}" 
+                                  Margin="0,16,0,0" FontSize="13"/>
+
+                        <TextBlock Text="💡 提示：启用任务后，系统将根据计划自动执行备份" 
+                                   FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" 
+                                   Margin="0,12,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 底部按钮栏 -->
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,16">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="🗑️ 删除任务" 
+                            Command="{Binding DeleteCommand}"
+                            Style="{DynamicResource PrimaryButton}" 
+                            Padding="20,12" Margin="0,0,8,0"
+                            Background="{DynamicResource ErrorBrush}"
+                            ToolTip="删除此备份任务"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="❌ 取消" 
+                            Click="CancelButton_Click"
+                            Style="{DynamicResource PrimaryButton}" 
+                            Padding="24,12" Margin="0,0,12,0"
+                            ToolTip="取消编辑"/>
+                    
+                    <Button Content="💾 保存任务" 
+                            Command="{Binding SaveCommand}"
+                            Style="{DynamicResource PrimaryButton}" 
+                            Padding="28,12"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
+                            ToolTip="保存任务配置"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

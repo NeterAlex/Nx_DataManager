@@ -1,0 +1,177 @@
+﻿<Window x:Class="NxDataManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NxDataManager"
+        xmlns:vm="clr-namespace:NxDataManager.ViewModels"
+        xmlns:controls="clr-namespace:NxDataManager.Controls"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        mc:Ignorable="d"
+        Title="Nx DataManager" 
+        Height="800" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Window.InputBindings>
+        <!-- 键盘快捷键 -->
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding CreateTaskCommand}"/>
+        <KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding EditTaskCommand}"/>
+        <KeyBinding Key="F5" Command="{Binding StartBackupCommand}"/>
+        <KeyBinding Key="F6" Command="{Binding PauseBackupCommand}"/>
+        <KeyBinding Key="F7" Command="{Binding StopBackupCommand}"/>
+        <KeyBinding Key="OemComma" Modifiers="Ctrl" Command="{Binding OpenSettingsCommand}"/>
+        <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding OpenRestoreWindowCommand}"/>
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ViewHistoryCommand}"/>
+    </Window.InputBindings>
+    
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部工具栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="20,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左侧：任务操作 -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <!-- 新建任务 -->
+                    <Button Content="➕" Command="{Binding CreateTaskCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="新建任务 (Ctrl+N)"/>
+                  
+                    <!-- 开始备份 -->
+                    <Button Content="▶️" Command="{Binding StartBackupCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="开始备份 (F5)"/>
+                </StackPanel>
+
+                <!-- 右侧：系统功能 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <!-- 执行历史 -->
+                    <Button Content="⏰" Command="{Binding OpenScheduleHistoryCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="计划任务执行历史"/>
+                    
+                    <!-- 版本控制 -->
+                    <Button Content="📂" Command="{Binding OpenVersionControlCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="版本控制管理"/>
+                    
+                    <!-- 数据库状态 -->
+                    <Button Content="🗄️" Command="{Binding OpenDatabaseStatusCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="数据库状态"/>
+                    
+                    <!-- 设置 -->
+                    <Button Content="⚙️" Command="{Binding OpenSettingsCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="设置 (Ctrl+,)"/>
+                    
+                    <!-- 恢复备份 -->
+                    <Button Content="🔓" Command="{Binding OpenRestoreWindowCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="恢复备份 (Ctrl+R)"/>
+                    
+                    <!-- 查看历史 -->
+                    <Button Content="📊" Command="{Binding ViewHistoryCommand}" 
+                            Style="{StaticResource ToolbarIconButtonStyle}"
+                            ToolTip="查看历史 (Ctrl+H)"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区域 - 任务列表 -->
+        <Grid Grid.Row="1" Margin="20">
+            <!-- 任务卡片网格 -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding BackupTasks}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:BackupTaskCard/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- 空状态提示 -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding BackupTasks.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                <TextBlock Text="📋" FontSize="80" HorizontalAlignment="Center" Opacity="0.3"/>
+                <TextBlock Text="还没有备份任务" FontSize="20" FontWeight="Bold"
+                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                           HorizontalAlignment="Center" Margin="0,16,0,8"/>
+                <TextBlock Text="点击上方 '新建任务' 按钮创建第一个备份任务" FontSize="14"
+                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                           HorizontalAlignment="Center"/>
+                <Button Content="➕ 创建第一个任务" 
+                        Command="{Binding CreateTaskCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0,24,0,0" Padding="24,12" FontSize="14"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- 底部状态栏 -->
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="📊 任务总数: " FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding BackupTasks.Count}" FontSize="12"
+                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                               FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,20,0"/>
+                    
+                    <TextBlock Text="✅ 启用: " FontSize="12"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding EnabledTasksCount}" FontSize="12"
+                               Foreground="{DynamicResource SuccessBrush}" 
+                               FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,20,0"/>
+                    
+                    <TextBlock Text="⚡ " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="NxDataManager v1.0" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 系统托盘图标 -->
+        <tb:TaskbarIcon Grid.Row="0" x:Name="NotifyIcon"
+                        ToolTipText="NxDataManager - 备份管理器"
+                        Visibility="Visible">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="📂 打开主窗口" Click="ShowMainWindow_Click" FontSize="13"/>
+                    <Separator/>
+                    <MenuItem Header="❌ 退出" Click="ExitApplication_Click" FontSize="13"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+    </Grid>
+</Window>

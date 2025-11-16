@@ -1,0 +1,189 @@
+<Window x:Class="NxDataManager.Views.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="备份进度详情" Height="500" Width="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5">
+    
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+        
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        
+        <Style x:Key="InfoText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#666"/>
+            <Setter Property="Margin" Value="0,4"/>
+        </Style>
+        
+        <Style x:Key="ProgressCard" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 标题栏 -->
+        <TextBlock Grid.Row="0" Text="{Binding TaskName, StringFormat='任务: {0}'}" 
+                   FontSize="20" FontWeight="Bold" Foreground="#333" Margin="0,0,0,20"/>
+        
+        <!-- 进度内容 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- 总体进度 -->
+                <Border Style="{StaticResource ProgressCard}">
+                    <StackPanel>
+                        <TextBlock Text="📊 总体进度" Style="{StaticResource SectionHeader}"/>
+                        
+                        <ProgressBar Height="30" Value="{Binding OverallPercentage}" 
+                                     Maximum="100" Foreground="#4CAF50" 
+                                     BorderBrush="#E0E0E0" BorderThickness="1"/>
+                        
+                        <TextBlock Text="{Binding OverallPercentage, StringFormat='{}{0:F1}%'}" 
+                                   FontSize="24" FontWeight="Bold" 
+                                   Foreground="#4CAF50" 
+                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 文件统计 -->
+                <Border Style="{StaticResource ProgressCard}">
+                    <StackPanel>
+                        <TextBlock Text="📁 文件统计" Style="{StaticResource SectionHeader}"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="总文件数: "/>
+                                    <Run Text="{Binding TotalFiles}" FontWeight="Bold"/>
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="已处理: "/>
+                                    <Run Text="{Binding ProcessedFiles}" FontWeight="Bold" Foreground="#4CAF50"/>
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="剩余: "/>
+                                    <Run Text="{Binding RemainingFiles}" FontWeight="Bold"/>
+                                </TextBlock>
+                            </StackPanel>
+                            
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="总大小: "/>
+                                    <Run Text="{Binding TotalSizeFormatted}" FontWeight="Bold"/>
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="已传输: "/>
+                                    <Run Text="{Binding ProcessedSizeFormatted}" FontWeight="Bold" Foreground="#4CAF50"/>
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource InfoText}">
+                                    <Run Text="剩余: "/>
+                                    <Run Text="{Binding RemainingSizeFormatted}" FontWeight="Bold"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 传输速度 -->
+                <Border Style="{StaticResource ProgressCard}">
+                    <StackPanel>
+                        <TextBlock Text="⚡ 传输信息" Style="{StaticResource SectionHeader}"/>
+                        
+                        <TextBlock Style="{StaticResource InfoText}">
+                            <Run Text="当前速度: "/>
+                            <Run Text="{Binding CurrentSpeed}" FontWeight="Bold" Foreground="#2196F3"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource InfoText}">
+                            <Run Text="平均速度: "/>
+                            <Run Text="{Binding AverageSpeed}" FontWeight="Bold"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource InfoText}">
+                            <Run Text="已用时间: "/>
+                            <Run Text="{Binding ElapsedTime}" FontWeight="Bold"/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource InfoText}">
+                            <Run Text="预计剩余: "/>
+                            <Run Text="{Binding EstimatedTimeRemaining}" FontWeight="Bold"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 当前文件 -->
+                <Border Style="{StaticResource ProgressCard}">
+                    <StackPanel>
+                        <TextBlock Text="📄 当前处理" Style="{StaticResource SectionHeader}"/>
+                        
+                        <TextBlock Text="{Binding CurrentFileName}" 
+                                   Style="{StaticResource InfoText}"
+                                   FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding CurrentFileName}"/>
+                        
+                        <ProgressBar Height="8" Value="{Binding CurrentFilePercentage}" 
+                                     Maximum="100" Margin="0,8,0,0"
+                                     Foreground="#FF9800"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- 最近文件列表 -->
+                <Border Style="{StaticResource ProgressCard}">
+                    <StackPanel>
+                        <TextBlock Text="📋 最近处理的文件" Style="{StaticResource SectionHeader}"/>
+                        
+                        <ListBox ItemsSource="{Binding RecentFiles}" 
+                                 Height="120"
+                                 BorderThickness="0"
+                                 Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" 
+                                               Style="{StaticResource InfoText}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- 底部按钮 -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                    HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="⏸️ 暂停" Width="100" Height="36" Margin="0,0,10,0"
+                    Command="{Binding PauseCommand}"
+                    IsEnabled="{Binding CanPause}"/>
+            <Button Content="▶️ 恢复" Width="100" Height="36" Margin="0,0,10,0"
+                    Command="{Binding ResumeCommand}"
+                    IsEnabled="{Binding CanResume}"/>
+            <Button Content="⏹️ 停止" Width="100" Height="36" Margin="0,0,10,0"
+                    Command="{Binding StopCommand}"
+                    IsEnabled="{Binding CanStop}"/>
+            <Button Content="关闭" Width="100" Height="36"
+                    Click="CloseButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

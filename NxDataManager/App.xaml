@@ -1,0 +1,43 @@
+﻿<Application x:Class="NxDataManager.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:NxDataManager"
+             xmlns:converters="clr-namespace:NxDataManager.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Fluent主题基础 -->
+                <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />
+                <!-- 动画资源 -->
+                <ResourceDictionary Source="Animations/Animations.xaml"/>
+                <!-- 现代样式 - 必须在主题之后加载，以便引用主题颜色 -->
+                <ResourceDictionary Source="Styles/ModernStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 颜色定义 -->
+            <SolidColorBrush x:Key="PrimaryBrush" Color="#0078D4"/>
+            <SolidColorBrush x:Key="SecondaryBrush" Color="#106EBE"/>
+            <SolidColorBrush x:Key="AccentBrush" Color="#4A90E2"/>
+            <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+            <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#EF4444"/>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F1F1F"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#757575"/>
+            <SolidColorBrush x:Key="HoverBrush" Color="#489ad9"/>
+            <SolidColorBrush x:Key="PressedBrush" Color="#E0E0E0"/>
+            
+            <!-- 转换器 -->
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+            <converters:BoolToTextConverter x:Key="BoolToTextConverter"/>
+            <converters:NotManualScheduleConverter x:Key="NotManualScheduleConverter"/>
+            <converters:ScheduleTypeDisplayConverter x:Key="ScheduleTypeDisplayConverter"/>
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:BoolToStatusColorConverter x:Key="BoolToStatusColorConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,283 @@
+<Window x:Class="NxDataManager.Views.RestoreWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NxDataManager.ViewModels"
+        mc:Ignorable="d"
+        Title="🔓 恢复加密备份" 
+        Height="750" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="🔓 恢复加密备份" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="解密和恢复您的备份文件到指定位置" FontSize="12" 
+                               Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <Button Content="❓" 
+                        Style="{StaticResource ToolbarIconButtonStyle}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        ToolTip="帮助说明"
+                        Foreground="White"/>
+            </Grid>
+        </Border>
+
+        <!-- 统计信息卡片 -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 操作状态 -->
+                <Border Grid.Column="0" Background="{DynamicResource AccentBrush}" 
+                        CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="📊 操作状态" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <TextBlock Text="{Binding CurrentStep, FallbackValue='就绪'}" FontSize="16" FontWeight="Bold" 
+                                   Foreground="White" HorizontalAlignment="Center" Margin="0,4,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 进度 -->
+                <Border Grid.Column="1" Background="{DynamicResource SuccessBrush}" 
+                        CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="📈 完成进度" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <TextBlock Text="{Binding Progress, StringFormat='{}{0:F1}%', FallbackValue='0%'}" FontSize="28" FontWeight="Bold" 
+                                   Foreground="White" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 快捷操作 -->
+                <Border Grid.Column="2" Background="{DynamicResource WarningBrush}" 
+                        CornerRadius="8" Padding="16,12">
+                    <StackPanel>
+                        <TextBlock Text="🔓 快速解密" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <Button Content="仅解密" 
+                                Command="{Binding QuickDecryptOnlyCommand}"
+                                Background="White"
+                                Foreground="{DynamicResource WarningBrush}"
+                                BorderThickness="0"
+                                Padding="20,8"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                HorizontalAlignment="Center"
+                                Margin="0,8,0,0"
+                                IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBoolConverter}}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="4"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区 -->
+        <Grid Grid.Row="2" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：配置区域 -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,16,0">
+                <StackPanel>
+                    <!-- 选择加密文件 -->
+                    <Border Background="{DynamicResource SurfaceBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="📁 加密文件" FontSize="14" FontWeight="Bold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="第 1 步" FontSize="11" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Right"/>
+                            </Grid>
+                            
+                            <TextBlock Text="选择备份文件" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBox Text="{Binding EncryptedFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="13" Padding="10,8" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <Button Content="📂 浏览文件..." 
+                                    Padding="12,8" 
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding BrowseEncryptedFileCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 解密密码 -->
+                    <Border Background="{DynamicResource SurfaceBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="🔐 解密密码" FontSize="14" FontWeight="Bold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="第 2 步" FontSize="11" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Right"/>
+                            </Grid>
+                            
+                            <TextBlock Text="输入加密密码" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <PasswordBox x:Name="DecryptPasswordBox" FontSize="13" Padding="10,8"
+                                         PasswordChanged="DecryptPasswordBox_PasswordChanged"/>
+                            <TextBlock Text="💡 未加密文件可留空" 
+                                       FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" 
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 恢复目标 -->
+                    <Border Background="{DynamicResource SurfaceBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="20">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="📂 恢复位置" FontSize="14" FontWeight="Bold" 
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="第 3 步" FontSize="11" 
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Right"/>
+                            </Grid>
+                            
+                            <TextBlock Text="选择目标文件夹" FontSize="12" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBox Text="{Binding RestorePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="13" Padding="10,8" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <Button Content="📁 选择文件夹..." 
+                                    Padding="12,8" 
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding BrowseRestorePathCommand}"
+                                    HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- 右侧：进度和说明 -->
+            <StackPanel Grid.Column="1">
+                <!-- 进度信息 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20" Margin="0,0,0,16"
+                        Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="📊 恢复进度" FontSize="14" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                        
+                        <ProgressBar Height="24" Value="{Binding Progress}" Maximum="100" 
+                                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                     Margin="0,0,0,12"/>
+                        
+                        <Grid>
+                            <TextBlock Text="{Binding CurrentStep}" FontSize="13" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Progress, StringFormat={}{0:F1}%}" 
+                                       FontSize="13" FontWeight="Bold"
+                                       Foreground="{DynamicResource SuccessBrush}" 
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 使用说明 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="📖 使用说明" FontSize="14" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                        
+                        <Border Background="#E3F2FD" BorderBrush="{DynamicResource PrimaryBrush}" 
+                                BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
+                            <TextBlock TextWrapping="Wrap" FontSize="12" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" LineHeight="20">
+                                <Run Text="📌 操作步骤" FontWeight="Bold"/>
+                                <LineBreak/><LineBreak/>
+                                <Run Text="1️⃣ 选择加密备份文件"/>
+                                <LineBreak/>
+                                <Run Text="2️⃣ 输入解密密码（如需要）"/>
+                                <LineBreak/>
+                                <Run Text="3️⃣ 选择恢复目标文件夹"/>
+                                <LineBreak/>
+                                <Run Text="4️⃣ 点击 '开始恢复' 按钮"/>
+                            </TextBlock>
+                        </Border>
+
+                        <Border Background="#FFF3E0" BorderBrush="{DynamicResource WarningBrush}" 
+                                BorderThickness="1" CornerRadius="6" Padding="12,10">
+                            <TextBlock TextWrapping="Wrap" FontSize="12" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" LineHeight="20">
+                                <Run Text="💡 支持的文件格式" FontWeight="Bold"/>
+                                <LineBreak/><LineBreak/>
+                                <Run Text="✓ .zip.encrypted (加密压缩)"/>
+                                <LineBreak/>
+                                <Run Text="✓ .zip (仅压缩)"/>
+                                <LineBreak/>
+                                <Run Text="✓ .encrypted (单独加密)"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- 底部状态栏 -->
+        <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage, FallbackValue='准备就绪'}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="⏹️ 取消" 
+                            Command="{Binding CancelRestoreCommand}"
+                            Style="{StaticResource PrimaryButton}" 
+                            Padding="20,10" Margin="0,0,12,0"
+                            Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    
+                    <Button Content="▶️ 开始恢复" 
+                            Command="{Binding StartRestoreCommand}"
+                            Style="{StaticResource PrimaryButton}" 
+                            Padding="28,10"
+                            IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBoolConverter}}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

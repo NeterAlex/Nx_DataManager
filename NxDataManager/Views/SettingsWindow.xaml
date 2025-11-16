@@ -1,0 +1,126 @@
+<Window x:Class="NxDataManager.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="设置" 
+        Height="700" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Grid Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧导航菜单 -->
+        <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <StackPanel Margin="0,20">
+                <TextBlock Text="⚙️ 设置" FontSize="20" FontWeight="Bold" 
+                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="20,0,0,20"/>
+                
+                <Button Content="🔔 通知" Style="{StaticResource IconButtonStyle}" 
+                        HorizontalContentAlignment="Left" Padding="20,12" FontSize="14"/>
+                <Button Content="💾 备份" Style="{StaticResource IconButtonStyle}" 
+                        HorizontalContentAlignment="Left" Padding="20,12" FontSize="14"/>
+                <Button Content="🔄 更新" Style="{StaticResource IconButtonStyle}" 
+                        HorizontalContentAlignment="Left" Padding="20,12" FontSize="14"/>
+                <Button Content="ℹ️ 关于" Style="{StaticResource IconButtonStyle}" 
+                        HorizontalContentAlignment="Left" Padding="20,12" FontSize="14"
+                        Command="{Binding OpenAboutCommand}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 右侧设置内容 -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="30,20">
+                <!-- 通知设置 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="12" Padding="25" Margin="0,0,20,20">
+                    <StackPanel>
+                        <TextBlock Text="🔔 通知设置" FontSize="18" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+                        
+                        <CheckBox Content="启用通知" IsChecked="{Binding EnableNotifications}" 
+                                  Margin="0,0,0,12" FontSize="14"/>
+                        <CheckBox Content="显示桌面通知" IsChecked="{Binding ShowDesktopNotifications}" 
+                                  Margin="0,0,0,12" FontSize="14"/>
+                        <CheckBox Content="最小化到系统托盘" IsChecked="{Binding MinimizeToTray}" 
+                                  Margin="0,0,0,12" FontSize="14"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 备份设置 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="12" Padding="25" Margin="0,0,20,20">
+                    <StackPanel>
+                        <TextBlock Text="💾 备份设置" FontSize="18" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+                        
+                        <TextBlock Text="默认备份位置" FontSize="13" Margin="0,0,0,8"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding DefaultBackupLocation}" Padding="10,8" FontSize="13"/>
+                            <Button Grid.Column="1" Content="📁 浏览" Margin="8,0,0,0" Padding="12,8"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding BrowseBackupLocationCommand}"/>
+                        </Grid>
+
+                        <TextBlock Text="保留历史记录天数" FontSize="13" Margin="0,0,0,8"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBox Text="{Binding MaxBackupHistory}" Padding="10,8" FontSize="13" 
+                                 Width="200" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 高级设置 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="12" Padding="25" Margin="0,0,20,20">
+                    <StackPanel>
+                        <TextBlock Text="🔧 高级设置" FontSize="18" FontWeight="Bold" 
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+                        
+                        <CheckBox Content="开机自动启动" IsChecked="{Binding StartWithWindows}" 
+                                  Margin="0,0,0,12" FontSize="14"/>
+                        <CheckBox Content="自动检查更新" IsChecked="{Binding AutoCheckUpdates}" 
+                                  Margin="0,0,0,16" FontSize="14"/>
+
+                        <Button Content="🔄 检查更新" Padding="16,10" Margin="0,0,0,12"
+                                Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                                Command="{Binding CheckForUpdatesCommand}"/>
+                        
+                        <Button Content="🗑️ 清除缓存" Padding="16,10"
+                                Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                                Command="{Binding ClearCacheCommand}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 底部按钮 -->
+                <Grid Margin="0,0,20,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Content="↺ 重置" Padding="20,10" Margin="0,0,8,0"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding ResetSettingsCommand}"/>
+                    <Button Grid.Column="2" Content="💾 保存设置" Padding="25,10"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding SaveSettingsCommand}"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

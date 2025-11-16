@@ -1,0 +1,218 @@
+<Window x:Class="NxDataManager.Views.BackupPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="备份预览" 
+        Height="700" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+            <StackPanel>
+                <TextBlock Text="🔍 备份预览" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="查看哪些文件将被备份或跳过" FontSize="12" 
+                           Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 任务信息 -->
+        <Border Grid.Row="1" Margin="20,20,20,10">
+            <StackPanel>
+                <!-- 基本信息 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="📋 任务信息" FontSize="15" FontWeight="Bold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                            
+                            <TextBlock Margin="0,0,0,6">
+                                <Run Text="任务名称: " FontWeight="SemiBold" 
+                                     Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <Run Text="{Binding TaskName}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </TextBlock>
+                            
+                            <TextBlock Margin="0,0,0,6">
+                                <Run Text="备份类型: " FontWeight="SemiBold" 
+                                     Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <Run Text="{Binding BackupTypeDisplay}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold"/>
+                            </TextBlock>
+                            
+                            <TextBlock Margin="0,0,0,6" TextTrimming="CharacterEllipsis" ToolTip="{Binding SourcePath}">
+                                <Run Text="源路径: " FontWeight="SemiBold" 
+                                     Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <Run Text="{Binding SourcePath}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </TextBlock>
+                            
+                            <TextBlock TextTrimming="CharacterEllipsis" ToolTip="{Binding DestinationPath}">
+                                <Run Text="目标路径: " FontWeight="SemiBold" 
+                                     Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                <Run Text="{Binding DestinationPath}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                            <TextBlock Text="📊 统计信息" FontSize="15" FontWeight="Bold" 
+                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12"/>
+                            
+                            <Border Background="{DynamicResource SuccessBrush}" CornerRadius="6" 
+                                    Padding="12,8" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="将要备份" FontSize="11" Foreground="White" Opacity="0.9"/>
+                                    <TextBlock FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center">
+                                        <Run Text="{Binding TotalFilesToBackup}"/>
+                                        <Run Text=" 个文件" FontSize="12"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding TotalSizeToBackup}" FontSize="12" 
+                                               Foreground="White" Opacity="0.9" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource BorderBrush}" CornerRadius="6" 
+                                    Padding="12,8">
+                                <StackPanel>
+                                    <TextBlock Text="跳过备份" FontSize="11" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock FontSize="20" FontWeight="Bold" 
+                                               Foreground="{DynamicResource TextPrimaryBrush}" 
+                                               HorizontalAlignment="Center">
+                                        <Run Text="{Binding TotalFilesToSkip}"/>
+                                        <Run Text=" 个文件" FontSize="12"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding TotalSizeToSkip}" FontSize="12" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 文件列表 -->
+                <TabControl SelectedIndex="{Binding SelectedTabIndex}">
+                    <!-- 需要备份的文件 -->
+                    <TabItem Header="📦 需要备份的文件">
+                        <Border Background="{DynamicResource SurfaceBrush}" 
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1">
+                            <Grid>
+                                <DataGrid ItemsSource="{Binding FilesToBackup}" 
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          GridLinesVisibility="Horizontal"
+                                          RowHeight="36"
+                                          HeadersVisibility="Column"
+                                          Background="{DynamicResource SurfaceBrush}"
+                                          BorderThickness="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="状态" Binding="{Binding StatusIcon}" Width="60"/>
+                                        <DataGridTextColumn Header="文件路径" Binding="{Binding RelativePath}" Width="*"/>
+                                        <DataGridTextColumn Header="大小" Binding="{Binding FileSizeFormatted}" Width="100"/>
+                                        <DataGridTextColumn Header="修改时间" Binding="{Binding LastModifiedTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140"/>
+                                        <DataGridTextColumn Header="原因" Binding="{Binding ChangeReason}" Width="180"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- 空状态 -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Visibility="{Binding FilesToBackup.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                                    <TextBlock Text="✅" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                                    <TextBlock Text="没有文件需要备份" FontSize="14" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </TabItem>
+
+                    <!-- 跳过的文件 -->
+                    <TabItem Header="⏭️ 跳过的文件">
+                        <Border Background="{DynamicResource SurfaceBrush}" 
+                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1">
+                            <Grid>
+                                <DataGrid ItemsSource="{Binding FilesToSkip}" 
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          GridLinesVisibility="Horizontal"
+                                          RowHeight="36"
+                                          HeadersVisibility="Column"
+                                          Background="{DynamicResource SurfaceBrush}"
+                                          BorderThickness="0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="状态" Binding="{Binding StatusIcon}" Width="60"/>
+                                        <DataGridTextColumn Header="文件路径" Binding="{Binding RelativePath}" Width="*"/>
+                                        <DataGridTextColumn Header="大小" Binding="{Binding FileSizeFormatted}" Width="100"/>
+                                        <DataGridTextColumn Header="修改时间" Binding="{Binding LastModifiedTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140"/>
+                                        <DataGridTextColumn Header="原因" Binding="{Binding ChangeReason}" Width="180"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- 空状态 -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Visibility="{Binding FilesToSkip.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                                    <TextBlock Text="📦" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                                    <TextBlock Text="所有文件都需要备份" FontSize="14" 
+                                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+            </StackPanel>
+        </Border>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+
+                <!-- 加载指示器 -->
+                <ProgressBar Width="200" Height="4" IsIndeterminate="True" 
+                             HorizontalAlignment="Right"
+                             Visibility="{Binding IsAnalyzing, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Grid>
+        </Border>
+
+        <!-- 操作按钮 -->
+        <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="❌ 取消" 
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource PrimaryButton}" 
+                        Padding="24,12" Margin="0,0,12,0"/>
+                
+                <Button Content="▶️ 开始备份" 
+                        Command="{Binding ConfirmCommand}"
+                        Style="{StaticResource PrimaryButton}" 
+                        Padding="28,12"
+                        IsEnabled="{Binding IsAnalyzing, Converter={StaticResource InverseBoolConverter}}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

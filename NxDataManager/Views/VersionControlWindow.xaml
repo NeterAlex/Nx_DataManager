@@ -1,0 +1,234 @@
+<Window x:Class="NxDataManager.Views.VersionControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="📂 文件版本控制" 
+        Height="750" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+            <Grid>
+                <StackPanel>
+                    <TextBlock Text="📂 文件版本控制管理器" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="管理备份文件的历史版本，支持恢复、比较和清理" FontSize="12" 
+                               Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+                
+                <Button Content="📁" 
+                        Command="{Binding OpenVersionFolderCommand}"
+                        Style="{StaticResource ToolbarIconButtonStyle}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        ToolTip="打开版本存储文件夹"
+                        Foreground="White"/>
+            </Grid>
+        </Border>
+
+        <!-- 文件选择区 -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="选择文件：" FontSize="14" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+                
+                <TextBox Grid.Column="1" Text="{Binding SelectedFilePath}" 
+                         IsReadOnly="True" FontSize="13"
+                         Background="{DynamicResource BackgroundBrush}"/>
+                
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0">
+                    <Button Content="📁 浏览..." 
+                            Command="{Binding SelectFileCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Padding="16,8" Margin="0,0,8,0"/>
+                    
+                    <Button Content="🔄 加载版本" 
+                            Command="{Binding LoadVersionsCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Padding="16,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 统计信息 -->
+        <Border Grid.Row="2" Background="{DynamicResource BackgroundBrush}" 
+                Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 版本总数 -->
+                <Border Grid.Column="0" Background="{DynamicResource AccentBrush}" 
+                        CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="📦 版本总数" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <TextBlock Text="{Binding TotalVersions}" FontSize="28" FontWeight="Bold" 
+                                   Foreground="White" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 总大小 -->
+                <Border Grid.Column="1" Background="{DynamicResource SuccessBrush}" 
+                        CornerRadius="8" Padding="16,12" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="💾 总大小" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <TextBlock Text="{Binding TotalVersionsSizeFormatted}" FontSize="28" FontWeight="Bold" 
+                                   Foreground="White" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 操作按钮 -->
+                <Border Grid.Column="2" Background="{DynamicResource WarningBrush}" 
+                        CornerRadius="8" Padding="16,12">
+                    <StackPanel>
+                        <TextBlock Text="🧹 清理旧版本" FontSize="12" Foreground="White" Opacity="0.9"/>
+                        <Button Content="执行清理" 
+                                Command="{Binding CleanupOldVersionsCommand}"
+                                Background="White"
+                                Foreground="{DynamicResource WarningBrush}"
+                                BorderThickness="0"
+                                Padding="20,8"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Cursor="Hand"
+                                HorizontalAlignment="Center"
+                                Margin="0,8,0,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="4"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 版本列表 -->
+        <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                Margin="20,0,20,0">
+            <Grid>
+                <DataGrid ItemsSource="{Binding Versions}" 
+                          SelectedItem="{Binding SelectedVersion}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          RowHeight="50"
+                          HeadersVisibility="Column"
+                          Background="Transparent"
+                          BorderThickness="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="版本" Binding="{Binding VersionLabel}" Width="120">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="创建时间" Binding="{Binding CreatedTimeFormatted}" Width="160"/>
+                        <DataGridTextColumn Header="大小" Binding="{Binding FileSizeFormatted}" Width="100"/>
+                        <DataGridTextColumn Header="哈希 (MD5)" Binding="{Binding HashShort}" Width="100"/>
+                        <DataGridTextColumn Header="注释" Binding="{Binding Comment}" Width="*"/>
+                        <DataGridTemplateColumn Header="操作" Width="280">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="🔄 恢复" 
+                                                Command="{Binding DataContext.RestoreVersionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Padding="12,6" Margin="0,0,8,0" FontSize="11"/>
+                                        
+                                        <Button Content="📊 比较" 
+                                                Command="{Binding DataContext.CompareVersionsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Background="{DynamicResource AccentBrush}"
+                                                Padding="12,6" Margin="0,0,8,0" FontSize="11"/>
+                                        
+                                        <Button Content="🗑️ 删除" 
+                                                Command="{Binding DataContext.DeleteVersionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Background="{DynamicResource ErrorBrush}"
+                                                Padding="12,6" FontSize="11"
+                                                IsEnabled="{Binding IsCurrent, Converter={StaticResource InverseBoolConverter}}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 空状态 -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Visibility="{Binding Versions.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                    <TextBlock Text="📂" FontSize="64" HorizontalAlignment="Center" Opacity="0.3"/>
+                    <TextBlock Text="没有找到版本记录" FontSize="16" FontWeight="Bold"
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                    <TextBlock Text="请选择文件并点击 '加载版本' 按钮" FontSize="13"
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                </StackPanel>
+
+                <!-- 加载指示器 -->
+                <Border Background="{DynamicResource SurfaceBrush}" 
+                        Opacity="0.95"
+                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar Width="200" Height="4" IsIndeterminate="True"/>
+                        <TextBlock Text="正在加载..." FontSize="14" 
+                                   Foreground="{DynamicResource TextSecondaryBrush}" 
+                                   HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 底部状态栏 -->
+        <Border Grid.Row="4" Background="{DynamicResource SurfaceBrush}" 
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="20,12">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+
+                <Button Content="✖ 关闭" 
+                        Command="{Binding CloseCommand}"
+                        Style="{StaticResource PrimaryButton}" 
+                        Padding="24,10"
+                        HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
