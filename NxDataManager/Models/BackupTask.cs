@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using NxDataManager.Services;
 
@@ -85,6 +86,10 @@ public partial class BackupTask : ObservableObject
     
     [ObservableProperty]
     private bool _enableResumable = true;
+
+    // 搜索/筛选可见性
+    [ObservableProperty]
+    private Visibility _visibility = Visibility.Visible;
 }
 
 /// <summary>

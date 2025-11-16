@@ -13,6 +13,165 @@
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}">
     
+    <Window.Resources>
+        <!-- 现代工具栏按钮样式 -->
+        <Style x:Key="ModernToolbarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="{StaticResource FluentIcons}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinWidth" Value="40"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#40FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#60FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 顶栏搜索框样式 -->
+        <Style x:Key="ModernSearchBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#20FFFFFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="40,10,40,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <!-- 搜索图标 -->
+                                <TextBlock Text="&#xE721;" 
+                                           FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="16"
+                                           Foreground="#80FFFFFF"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Left"
+                                           Margin="14,0,0,0"
+                                           IsHitTestVisible="False"/>
+                                
+                                <!-- 输入框 -->
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                            Focusable="false"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollBarVisibility="Hidden"
+                                            Margin="{TemplateBinding Padding}"/>
+                                
+                                <!-- 占位符 -->
+                                <TextBlock x:Name="PlaceholderText"
+                                           Text="搜索任务..."
+                                           Foreground="#80FFFFFF"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"
+                                           Margin="40,0,40,0"
+                                           IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                
+                                <!-- 清除按钮 -->
+                                <Button x:Name="ClearButton"
+                                        Content="&#xE711;"
+                                        FontFamily="{StaticResource FluentIcons}"
+                                        FontSize="12"
+                                        Foreground="#80FFFFFF"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Width="30" Height="30"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,8,0"
+                                        Cursor="Hand"
+                                        Visibility="Collapsed"
+                                        Click="SearchClearButton_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="buttonBorder"
+                                                                Background="{TemplateBinding Background}"
+                                                                CornerRadius="15"
+                                                                Padding="8">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"
+                                                                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="buttonBorder" Property="Background" Value="#40FFFFFF"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter TargetName="buttonBorder" Property="Background" Value="#60FFFFFF"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- 获得焦点时 -->
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#30FFFFFF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#80FFFFFF"/>
+                            </Trigger>
+                            <!-- 鼠标悬停时 -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#30FFFFFF"/>
+                            </Trigger>
+                            <!-- 有文本时显示清除按钮 -->
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
+                                <Setter TargetName="ClearButton" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Window.InputBindings>
         <!-- 键盘快捷键 -->
         <KeyBinding Key="N" Modifiers="Ctrl" Command="{Binding CreateTaskCommand}"/>
@@ -24,7 +183,6 @@
         <KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding OpenRestoreWindowCommand}"/>
         <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ViewHistoryCommand}"/>
     </Window.InputBindings>
-    
 
     <Grid>
         <Grid.RowDefinitions>
@@ -33,68 +191,110 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 顶部工具栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" 
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
-                Padding="20,6">
+        <!-- 顶部工具栏 - 使用渐变背景 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}"
+                Padding="20,4">
+            <Border.Effect>
+                <DropShadowEffect Color="{DynamicResource ShadowColor}" 
+                                  BlurRadius="8" ShadowDepth="2" 
+                                  Opacity="0.15" Direction="270"/>
+            </Border.Effect>
+            
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 左侧：任务操作 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <!-- 新建任务 -->
-                    <Button Content="➕" Command="{Binding CreateTaskCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
-                            ToolTip="新建任务 (Ctrl+N)"/>
-                  
-                    <!-- 开始备份 -->
-                    <Button Content="▶️" Command="{Binding StartBackupCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
-                            ToolTip="开始备份 (F5)"/>
+                <!-- 左侧：Logo 和标题 -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="24" Foreground="White" 
+                               VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="Nx DataManager" FontSize="18" FontWeight="SemiBold"
+                               Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- 中间：搜索框和快速操作 -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- 搜索框 -->
+                    <TextBox x:Name="SearchBox"
+                             Style="{StaticResource ModernSearchBox}"
+                             Height="30"
+                             Width="320"
+                             Margin="0,10,20,10"
+                             TextChanged="SearchBox_TextChanged"
+                             KeyDown="SearchBox_KeyDown"/>
+                    
+                    <!-- 快速操作按钮 -->
+                    <StackPanel Orientation="Horizontal">
+
+                        <!-- 新建任务 -->
+                        <Button Content="&#xE710;" Command="{Binding CreateTaskCommand}" 
+                                Style="{StaticResource ModernToolbarButton}"
+                                ToolTip="新建任务 (Ctrl+N)"/>
+                      
+                        <!-- 开始备份 -->
+                        <Button Content="&#xE768;" Command="{Binding StartBackupCommand}" 
+                                Style="{StaticResource ModernToolbarButton}"
+                                ToolTip="开始备份 (F5)"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- 右侧：系统功能 -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" 
+                            HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <!-- 仪表盘 -->
+                    <Button Content="&#xE9D2;" Command="{Binding OpenDashboardCommand}" 
+                                Style="{StaticResource ModernToolbarButton}"
+                                ToolTip="数据统计仪表盘"/>
+
+                    <!-- 查看历史 -->
+                    <Button Content="&#xE823;" Command="{Binding ViewHistoryCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
+                            ToolTip="查看备份历史 (Ctrl+H)"/>
+
                     <!-- 执行历史 -->
-                    <Button Content="⏰" Command="{Binding OpenScheduleHistoryCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
+                    <Button Content="&#xEFFF;" Command="{Binding OpenScheduleHistoryCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
                             ToolTip="计划任务执行历史"/>
                     
                     <!-- 版本控制 -->
-                    <Button Content="📂" Command="{Binding OpenVersionControlCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
+                    <Button Content="&#xE7C1;" Command="{Binding OpenVersionControlCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
                             ToolTip="版本控制管理"/>
                     
+                    <!-- 远程连接 -->
+                    <Button Content="&#xE753;" Command="{Binding OpenRemoteConnectionCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
+                            ToolTip="远程连接管理 (SMB/WebDAV)"/>
+                    
                     <!-- 数据库状态 -->
-                    <Button Content="🗄️" Command="{Binding OpenDatabaseStatusCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
+                    <Button Content="&#xF120;" Command="{Binding OpenDatabaseStatusCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
                             ToolTip="数据库状态"/>
-                    
-                    <!-- 设置 -->
-                    <Button Content="⚙️" Command="{Binding OpenSettingsCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
-                            ToolTip="设置 (Ctrl+,)"/>
-                    
+
+
                     <!-- 恢复备份 -->
-                    <Button Content="🔓" Command="{Binding OpenRestoreWindowCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
+                    <Button Content="&#xE785;" Command="{Binding OpenRestoreWindowCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
                             ToolTip="恢复备份 (Ctrl+R)"/>
-                    
-                    <!-- 查看历史 -->
-                    <Button Content="📊" Command="{Binding ViewHistoryCommand}" 
-                            Style="{StaticResource ToolbarIconButtonStyle}"
-                            ToolTip="查看历史 (Ctrl+H)"/>
+                    <!-- 设置 -->
+                    <Button Content="&#xE713;" Command="{Binding OpenSettingsCommand}" 
+                            Style="{StaticResource ModernToolbarButton}"
+                            ToolTip="设置 (Ctrl+,)"/>
+
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- 主内容区域 - 任务列表 -->
-        <Grid Grid.Row="1" Margin="20">
+        <Grid Grid.Row="1" Margin="24,20,24,20">
             <!-- 任务卡片网格 -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding BackupTasks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -111,52 +311,115 @@
             </ScrollViewer>
 
             <!-- 空状态提示 -->
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Visibility="{Binding BackupTasks.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
-                <TextBlock Text="📋" FontSize="80" HorizontalAlignment="Center" Opacity="0.3"/>
-                <TextBlock Text="还没有备份任务" FontSize="20" FontWeight="Bold"
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center"
+                  Visibility="{Binding BackupTasks.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 背景装饰圆 -->
+                <Ellipse Grid.Row="0" Grid.RowSpan="4"
+                         Width="300" Height="300"
+                         Fill="{DynamicResource Primary100}"
+                         Opacity="0.3"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+                
+                <!-- 图标 -->
+                <TextBlock Grid.Row="0" Text="&#xE8B7;" 
+                           FontFamily="{StaticResource FluentIcons}"
+                           FontSize="80" 
+                           HorizontalAlignment="Center" 
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                
+                <!-- 标题 -->
+                <TextBlock Grid.Row="1" Text="还没有备份任务" 
+                           FontSize="24" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,24,0,8"/>
+                
+                <!-- 描述 -->
+                <TextBlock Grid.Row="2" 
+                           Text="创建您的第一个备份任务，保护重要数据安全" 
+                           FontSize="14"
                            Foreground="{DynamicResource TextSecondaryBrush}" 
-                           HorizontalAlignment="Center" Margin="0,16,0,8"/>
-                <TextBlock Text="点击上方 '新建任务' 按钮创建第一个备份任务" FontSize="14"
-                           Foreground="{DynamicResource TextSecondaryBrush}" 
-                           HorizontalAlignment="Center"/>
-                <Button Content="➕ 创建第一个任务" 
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,32"/>
+                
+                <!-- 创建按钮 -->
+                <Button Grid.Row="3" 
                         Command="{Binding CreateTaskCommand}"
                         Style="{StaticResource PrimaryButton}"
-                        Margin="0,24,0,0" Padding="24,12" FontSize="14"/>
-            </StackPanel>
+                        Padding="32,16" FontSize="15"
+                        HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE710;" FontFamily="{StaticResource FluentIcons}"
+                                   FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="创建第一个任务" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
         </Grid>
 
         <!-- 底部状态栏 -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" 
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
-                Padding="20,12">
+                Padding="24,12">
+            <Border.Effect>
+                <DropShadowEffect Color="{DynamicResource ShadowColor}" 
+                                  BlurRadius="4" ShadowDepth="0" 
+                                  Opacity="0.05" Direction="90"/>
+            </Border.Effect>
+            
             <Grid>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE946;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="16" 
+                               Foreground="{DynamicResource InfoBrush}"
+                               VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding StatusMessage}" 
                                Foreground="{DynamicResource TextSecondaryBrush}" 
                                VerticalAlignment="Center" FontSize="13"/>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <TextBlock Text="📊 任务总数: " FontSize="12"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding BackupTasks.Count}" FontSize="12"
-                               Foreground="{DynamicResource TextPrimaryBrush}" 
-                               FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,20,0"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <!-- 任务总数 -->
+                    <Border Background="{DynamicResource SurfaceVariantBrush}"
+                            CornerRadius="6" Padding="12,6" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="任务总数:" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding BackupTasks.Count}" FontSize="12"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" 
+                                       FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                     
-                    <TextBlock Text="✅ 启用: " FontSize="12"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding EnabledTasksCount}" FontSize="12"
-                               Foreground="{DynamicResource SuccessBrush}" 
-                               FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,20,0"/>
-                    
-                    <TextBlock Text="⚡ " FontSize="14" VerticalAlignment="Center"/>
-                    <TextBlock Text="NxDataManager v1.0" FontSize="11"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"/>
+                    <!-- 启用数量 -->
+                    <Border Background="{DynamicResource Primary100}"
+                            CornerRadius="6" Padding="12,6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE73E;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="已启用:" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding EnabledTasksCount}" FontSize="12"
+                                       Foreground="{DynamicResource SuccessBrush}" 
+                                       FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Grid>
         </Border>

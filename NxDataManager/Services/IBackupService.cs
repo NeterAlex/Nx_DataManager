@@ -40,6 +40,11 @@ public interface IBackupService
     /// 验证备份完整性
     /// </summary>
     Task<bool> VerifyBackupAsync(Guid historyId);
+    
+    /// <summary>
+    /// 删除备份历史记录
+    /// </summary>
+    Task DeleteBackupHistoryAsync(Guid historyId);
 }
 
 /// <summary>

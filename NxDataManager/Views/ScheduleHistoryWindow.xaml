@@ -18,20 +18,21 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}" Padding="20,4">
             <Grid>
-                <StackPanel>
-                    <TextBlock Text="⏰ 计划任务执行历史" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="查看自动执行的备份任务历史记录" FontSize="12" 
-                               Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE823;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="24" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="计划任务执行历史" FontSize="18" FontWeight="SemiBold" 
+                               Foreground="White" VerticalAlignment="Center"/>
                 </StackPanel>
                 
-                <Button Content="🔄" 
+                <Button Content="&#xE72C;" FontFamily="{StaticResource FluentIcons}"
                         Command="{Binding RefreshCommand}"
                         Style="{StaticResource ToolbarIconButtonStyle}"
                         HorizontalAlignment="Right" VerticalAlignment="Center"
                         ToolTip="刷新数据"
-                        Foreground="White"/>
+                        Foreground="White" Margin="4,0" Padding="12,8" FontSize="16"/>
             </Grid>
         </Border>
 

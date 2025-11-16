@@ -18,11 +18,12 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
-            <StackPanel>
-                <TextBlock Text="🔍 备份预览" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                <TextBlock Text="查看哪些文件将被备份或跳过" FontSize="12" 
-                           Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}" Padding="20,4">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="&#xE8B3;" FontFamily="{StaticResource FluentIcons}"
+                           FontSize="24" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock Text="备份预览" FontSize="18" FontWeight="SemiBold" 
+                           Foreground="White" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 

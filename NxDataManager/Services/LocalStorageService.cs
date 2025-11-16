@@ -146,4 +146,10 @@ public class LocalStorageService : IStorageService
         // 暂时不实现，LocalStorageService 可能被弃用
         return await Task.FromResult(new List<FileBackupInfo>());
     }
+
+    public async Task DeleteBackupHistoryAsync(Guid historyId)
+    {
+        // LocalStorageService 暂时不实现删除功能
+        await Task.CompletedTask;
+    }
 }

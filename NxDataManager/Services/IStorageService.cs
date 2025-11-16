@@ -59,4 +59,9 @@ public interface IStorageService
     /// 根据历史记录ID获取文件备份记录
     /// </summary>
     Task<List<FileBackupInfo>> GetFileBackupInfosByHistoryAsync(Guid taskId, Guid historyId);
+    
+    /// <summary>
+    /// 删除备份历史记录
+    /// </summary>
+    Task DeleteBackupHistoryAsync(Guid historyId);
 }

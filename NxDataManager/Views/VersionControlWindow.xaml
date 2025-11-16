@@ -19,20 +19,21 @@
         </Grid.RowDefinitions>
 
         <!-- 标题栏 -->
-        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" Padding="20,15">
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}" Padding="20,4">
             <Grid>
-                <StackPanel>
-                    <TextBlock Text="📂 文件版本控制管理器" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="管理备份文件的历史版本，支持恢复、比较和清理" FontSize="12" 
-                               Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="24" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="文件版本控制管理器" FontSize="18" FontWeight="SemiBold" 
+                               Foreground="White" VerticalAlignment="Center"/>
                 </StackPanel>
                 
-                <Button Content="📁" 
+                <Button Content="&#xE8DA;" FontFamily="{StaticResource FluentIcons}"
                         Command="{Binding OpenVersionFolderCommand}"
                         Style="{StaticResource ToolbarIconButtonStyle}"
                         HorizontalAlignment="Right" VerticalAlignment="Center"
                         ToolTip="打开版本存储文件夹"
-                        Foreground="White"/>
+                        Foreground="White" Margin="4,0" Padding="12,8" FontSize="16"/>
             </Grid>
         </Border>
 

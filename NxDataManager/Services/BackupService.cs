@@ -317,6 +317,32 @@ public class BackupService : IBackupService
         }
     }
 
+    public async Task DeleteBackupHistoryAsync(Guid historyId)
+    {
+        try
+        {
+            await _storageService.DeleteBackupHistoryAsync(historyId);
+            
+            // 从缓存中移除
+            foreach (var cache in _historyCache.Values)
+            {
+                var itemToRemove = cache.FirstOrDefault(h => h.Id == historyId);
+                if (itemToRemove != null)
+                {
+                    cache.Remove(itemToRemove);
+                    break;
+                }
+            }
+            
+            _notificationService?.ShowSuccess("删除成功", "历史记录已删除");
+        }
+        catch (Exception ex)
+        {
+            _notificationService?.ShowError("删除失败", $"删除历史记录失败: {ex.Message}");
+            throw;
+        }
+    }
+
     private async Task<string> CalculateFileHashAsync(string filePath)
     {
         using var md5 = MD5.Create();

@@ -39,6 +39,21 @@ public interface IReportExportService
     /// 生成存储分析报告
     /// </summary>
     Task<ReportData> GenerateStorageReportAsync();
+    
+    /// <summary>
+    /// 导出历史记录为CSV
+    /// </summary>
+    Task ExportHistoryToCsvAsync(List<BackupHistory> histories, string outputPath);
+    
+    /// <summary>
+    /// 导出历史记录为PDF报告
+    /// </summary>
+    Task ExportHistoryToPdfAsync(List<BackupHistory> histories, string outputPath);
+    
+    /// <summary>
+    /// 导出历史记录为HTML报告
+    /// </summary>
+    Task ExportHistoryToHtmlAsync(List<BackupHistory> histories, string outputPath);
 }
 
 /// <summary>

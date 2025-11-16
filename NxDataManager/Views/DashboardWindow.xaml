@@ -1,0 +1,347 @@
+<Window x:Class="NxDataManager.Views.DashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:NxDataManager.Controls"
+        mc:Ignorable="d"
+        Title="数据统计仪表盘" 
+        Height="900" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Window.Resources>
+        <!-- 图表控件模板 -->
+        <Style TargetType="{x:Type controls:SimpleBarChart}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type controls:SimpleBarChart}">
+                        <Canvas x:Name="PART_Canvas" Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type controls:SimplePieChart}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type controls:SimplePieChart}">
+                        <Canvas x:Name="PART_Canvas" Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 统计卡片样式 -->
+        <Style x:Key="StatCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="{DynamicResource ShadowColor}" 
+                                      BlurRadius="12" ShadowDepth="2" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 图表卡片样式 -->
+        <Style x:Key="ChartCard" TargetType="Border" BasedOn="{StaticResource StatCard}">
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 顶部标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}"
+                Padding="20,4">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE9D2;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="24" Foreground="White" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="数据统计仪表盘" FontSize="18" FontWeight="SemiBold"
+                               Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Content="&#xE72C;" FontFamily="{StaticResource FluentIcons}"
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource ModernToolbarButton}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        ToolTip="刷新数据"
+                        Margin="4,0" Padding="12,8" FontSize="16"/>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      Padding="30,20">
+            <StackPanel>
+                <!-- 快速统计卡片区域 -->
+                <TextBlock Text="📊 快速统计" FontSize="18" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Margin="0,0,0,15"/>
+
+                <Grid Margin="0,0,0,30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 总任务数 -->
+                    <Border Grid.Column="0" Style="{StaticResource StatCard}" Margin="0,0,15,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="32" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="{Binding TotalTasks}" FontSize="36" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="15,0,0,0"/>
+                            </StackPanel>
+                            <TextBlock Text="总任务数" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock Margin="0,5,0,0" FontSize="11"
+                                       Foreground="{DynamicResource TextTertiaryBrush}">
+                                <Run Text="已启用:"/>
+                                <Run Text="{Binding EnabledTasks}" FontWeight="Bold"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 本周成功/失败 -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCard}" Margin="0,0,15,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="&#xE73E;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="32" Foreground="{DynamicResource SuccessBrush}"/>
+                                <TextBlock Text="{Binding WeekSuccessCount}" FontSize="36" FontWeight="Bold"
+                                           Foreground="{DynamicResource SuccessBrush}"
+                                           VerticalAlignment="Bottom" Margin="15,0,0,0"/>
+                                <TextBlock Text="/" FontSize="24" Foreground="{DynamicResource TextTertiaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="5,0"/>
+                                <TextBlock Text="{Binding WeekFailureCount}" FontSize="24"
+                                           Foreground="{DynamicResource ErrorBrush}"
+                                           VerticalAlignment="Bottom"/>
+                            </StackPanel>
+                            <TextBlock Text="本周成功/失败" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 平均备份速度 -->
+                    <Border Grid.Column="2" Style="{StaticResource StatCard}" Margin="0,0,15,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="&#xE895;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="32" Foreground="{DynamicResource InfoBrush}"/>
+                                <TextBlock Text="{Binding AverageSpeed, StringFormat='{}{0:F1}'}" 
+                                           FontSize="36" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="15,0,0,0"/>
+                                <TextBlock Text="MB/s" FontSize="16"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="5,0,0,5"/>
+                            </StackPanel>
+                            <TextBlock Text="平均备份速度" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 存储利用率 -->
+                    <Border Grid.Column="3" Style="{StaticResource StatCard}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="&#xEDA2;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="32" Foreground="{DynamicResource WarningBrush}"/>
+                                <TextBlock Text="{Binding StorageUtilization, StringFormat='{}{0:F1}'}" 
+                                           FontSize="36" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="15,0,0,0"/>
+                                <TextBlock Text="%" FontSize="20"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Bottom" Margin="2,0,0,5"/>
+                            </StackPanel>
+                            <TextBlock Text="存储利用率" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding TotalBackupSizeFormatted}" FontSize="11"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                       Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- 图表区域 -->
+                <Grid Margin="0,0,0,30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 左侧：趋势图表 -->
+                    <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                        <!-- 备份成功率趋势 -->
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <TextBlock Text="📈 最近7天备份成功率" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,15"/>
+                                <controls:SimpleBarChart Data="{Binding SuccessRateChartData}"
+                                                        Height="200"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 每日备份数据量 -->
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <TextBlock Text="📊 每日备份数据量 (GB)" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,15"/>
+                                <controls:SimpleBarChart Data="{Binding DailyBackupSizeData}"
+                                                        Height="200"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 备份耗时趋势 -->
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <TextBlock Text="⏱️ 平均备份耗时 (分钟)" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,15"/>
+                                <controls:SimpleBarChart Data="{Binding BackupTimeData}"
+                                                        Height="200"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 右侧：饼图和实时状态 -->
+                    <StackPanel Grid.Column="1">
+                        <!-- 存储分布饼图 -->
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <TextBlock Text="🥧 各任务存储占比" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,15"/>
+                                <controls:SimplePieChart Data="{Binding TaskStorageDistribution}"
+                                                        Height="220"/>
+                                <!-- 图例 -->
+                                <ItemsControl ItemsSource="{Binding TaskStorageDistribution}"
+                                            Margin="0,15,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Margin="0,3">
+                                                <Ellipse Width="12" Height="12">
+                                                    <Ellipse.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}"/>
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+                                                <TextBlock Text="{Binding Label}" FontSize="11"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                           Margin="8,0,0,0"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 实时状态 -->
+                        <Border Style="{StaticResource ChartCard}">
+                            <StackPanel>
+                                <TextBlock Text="🎯 实时状态" FontSize="16" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Margin="0,0,0,15"/>
+
+                                <!-- 正在运行 -->
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="⚡ 正在运行" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SuccessBrush}"
+                                               Margin="0,0,0,5"/>
+                                    <ItemsControl ItemsSource="{Binding RunningTasks}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}" FontSize="11"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                           Margin="15,2,0,2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="暂无运行中的任务" FontSize="11" 
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               Margin="15,2,0,2">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RunningTasks.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <!-- 队列中 -->
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="⏳ 队列中" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource InfoBrush}"
+                                               Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding QueuedTasks.Count, StringFormat='{}{0} 个任务等待执行'}" 
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="15,2,0,2"/>
+                                </StackPanel>
+
+                                <!-- 最近完成 -->
+                                <StackPanel>
+                                    <TextBlock Text="✅ 最近完成" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="0,0,0,5"/>
+                                    <ItemsControl ItemsSource="{Binding RecentCompletedTasks}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="15,3,0,3">
+                                                    <TextBlock FontSize="11" 
+                                                               Foreground="{DynamicResource TextSecondaryBrush}">
+                                                        <Run Text="{Binding StartTime, StringFormat='{}{0:HH:mm}'}"/>
+                                                        <Run Text="-"/>
+                                                        <Run Text="{Binding TaskName}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 加载遮罩 -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#80000000"
+              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border Background="{DynamicResource SurfaceBrush}"
+                    CornerRadius="12" Padding="40"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="&#xE895;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="48" Foreground="{DynamicResource PrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="正在加载数据..." FontSize="16"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               Margin="0,15,0,0" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

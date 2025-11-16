@@ -1,0 +1,378 @@
+<Window x:Class="NxDataManager.Views.RemoteConnectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="远程连接管理" 
+        Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+    
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryGradientBrush}" Padding="20,4">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE753;" FontFamily="{StaticResource FluentIcons}"
+                               FontSize="24" Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="远程连接管理" FontSize="18" FontWeight="SemiBold" 
+                               Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 主内容区域 -->
+        <TabControl Grid.Row="1" Background="{DynamicResource SurfaceBrush}"
+                    Margin="20" 
+                    SelectedIndex="{Binding ConnectionType, Converter={StaticResource ConnectionTypeToIndexConverter}}">
+            
+            <!-- SMB 连接标签页 -->
+            <TabItem Header="SMB / CIFS 连接">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 左侧：连接列表 -->
+                    <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="10" Margin="0,0,10,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="已保存的连接" 
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Margin="0,0,0,10"/>
+                            
+                            <ListBox ItemsSource="{Binding SmbConnections}"
+                                     SelectedItem="{Binding SelectedSmbConnection}"
+                                     DisplayMemberPath="Name"
+                                     Background="Transparent"
+                                     BorderThickness="0">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Padding" Value="8"/>
+                                        <Setter Property="Margin" Value="0,2"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{DynamicResource BorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Name}" 
+                                                                       FontWeight="SemiBold"
+                                                                       FontSize="13"/>
+                                                            <TextBlock Text="{Binding ServerAddress}" 
+                                                                       FontSize="11"
+                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                       Margin="0,2,0,0"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- 右侧：连接详情和编辑 -->
+                    <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="20">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter='编辑 SMB 连接|新建 SMB 连接'}" 
+                                           FontSize="16" FontWeight="SemiBold"
+                                           Margin="0,0,0,20"/>
+
+                                <!-- 连接名称 -->
+                                <TextBlock Text="连接名称*" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding SmbName, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"/>
+
+                                <!-- 服务器地址 -->
+                                <TextBlock Text="服务器地址*" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding SmbServerAddress, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"
+                                         ToolTip="例如: 192.168.1.100 或 server.domain.com"/>
+
+                                <!-- 共享名称 -->
+                                <TextBlock Text="共享名称*" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding SmbShareName, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"
+                                         ToolTip="例如: SharedFolder"/>
+
+                                <!-- 用户名 -->
+                                <TextBlock Text="用户名（可选）" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding SmbUsername, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"/>
+
+                                <!-- 密码 -->
+                                <TextBlock Text="密码（可选）" FontSize="12" Margin="0,0,0,5"/>
+                                <PasswordBox x:Name="SmbPasswordBox"
+                                            Padding="8" FontSize="13" Margin="0,0,0,15"
+                                            PasswordChanged="SmbPasswordBox_PasswordChanged"/>
+
+                                <!-- 域 -->
+                                <TextBlock Text="域（可选）" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding SmbDomain, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"
+                                         ToolTip="Windows域名，如: COMPANY"/>
+
+                                <!-- 使用加密 -->
+                                <CheckBox Content="使用SMB加密" 
+                                          IsChecked="{Binding SmbUseEncryption}"
+                                          Margin="0,0,0,20"/>
+
+                                <!-- 操作按钮 -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="取消" 
+                                            Command="{Binding CancelEditCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <Button Content="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter='更新|添加'}" 
+                                            Command="{Binding AddSmbConnectionCommand}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"/>
+                                    <Button Content="测试连接" 
+                                            Command="{Binding TestSmbConnectionCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBoolConverter}}"/>
+                                    <Button Content="编辑" 
+                                            Command="{Binding EditSmbConnectionCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                    <Button Content="删除" 
+                                            Command="{Binding RemoveSmbConnectionCommand}"
+                                            Style="{StaticResource DangerButton}"
+                                            Padding="20,8"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                </StackPanel>
+
+                                <!-- 文件浏览（测试功能） -->
+                                <Border Background="#F3F4F6" 
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" CornerRadius="8"
+                                        Padding="15" Margin="0,20,0,0"
+                                        Visibility="{Binding SelectedSmbConnection, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="文件浏览器（测试功能）" 
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+                                        <Button Content="浏览文件" 
+                                                Command="{Binding BrowseSmbFilesCommand}"
+                                                Style="{StaticResource SecondaryButton}"
+                                                Padding="15,8" Margin="0,0,0,10"/>
+                                        <ListBox ItemsSource="{Binding RemoteFiles}"
+                                                 MaxHeight="150"
+                                                 Background="White"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- WebDAV 连接标签页 -->
+            <TabItem Header="WebDAV 连接">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 左侧：连接列表 -->
+                    <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="10" Margin="0,0,10,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="已保存的连接" 
+                                       FontSize="14" FontWeight="SemiBold"
+                                       Margin="0,0,0,10"/>
+                            
+                            <ListBox ItemsSource="{Binding WebDavConnections}"
+                                     SelectedItem="{Binding SelectedWebDavConnection}"
+                                     DisplayMemberPath="Name"
+                                     Background="Transparent"
+                                     BorderThickness="0">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Padding" Value="8"/>
+                                        <Setter Property="Margin" Value="0,2"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{DynamicResource BorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Name}" 
+                                                                       FontWeight="SemiBold"
+                                                                       FontSize="13"/>
+                                                            <TextBlock Text="{Binding ServerUrl}" 
+                                                                       FontSize="11"
+                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                       Margin="0,2,0,0"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource HoverBrush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- 右侧：连接详情和编辑 -->
+                    <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="8" Padding="20">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter='编辑 WebDAV 连接|新建 WebDAV 连接'}" 
+                                           FontSize="16" FontWeight="SemiBold"
+                                           Margin="0,0,0,20"/>
+
+                                <!-- 连接名称 -->
+                                <TextBlock Text="连接名称*" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding WebDavName, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"/>
+
+                                <!-- 服务器URL -->
+                                <TextBlock Text="服务器URL*" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding WebDavServerUrl, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"
+                                         ToolTip="例如: cloud.example.com 或 192.168.1.100"/>
+
+                                <!-- 端口 -->
+                                <TextBlock Text="端口" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding WebDavPort, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"
+                                         ToolTip="默认: 443 (HTTPS) 或 80 (HTTP)"/>
+
+                                <!-- 使用SSL -->
+                                <CheckBox Content="使用 SSL/TLS (HTTPS)" 
+                                          IsChecked="{Binding WebDavUseSSL}"
+                                          Margin="0,0,0,15"/>
+
+                                <!-- 用户名 -->
+                                <TextBlock Text="用户名（可选）" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding WebDavUsername, UpdateSourceTrigger=PropertyChanged}"
+                                         Padding="8" FontSize="13" Margin="0,0,0,15"/>
+
+                                <!-- 密码 -->
+                                <TextBlock Text="密码（可选）" FontSize="12" Margin="0,0,0,5"/>
+                                <PasswordBox x:Name="WebDavPasswordBox"
+                                            Padding="8" FontSize="13" Margin="0,0,0,20"
+                                            PasswordChanged="WebDavPasswordBox_PasswordChanged"/>
+
+                                <!-- 操作按钮 -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="取消" 
+                                            Command="{Binding CancelEditCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <Button Content="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter='更新|添加'}" 
+                                            Command="{Binding AddWebDavConnectionCommand}"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"/>
+                                    <Button Content="测试连接" 
+                                            Command="{Binding TestWebDavConnectionCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBoolConverter}}"/>
+                                    <Button Content="编辑" 
+                                            Command="{Binding EditWebDavConnectionCommand}"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Padding="20,8" Margin="0,0,10,0"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                    <Button Content="删除" 
+                                            Command="{Binding RemoveWebDavConnectionCommand}"
+                                            Style="{StaticResource DangerButton}"
+                                            Padding="20,8"
+                                            Visibility="{Binding IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                </StackPanel>
+
+                                <!-- 文件浏览（测试功能） -->
+                                <Border Background="#F3F4F6" 
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" CornerRadius="8"
+                                        Padding="15" Margin="0,20,0,0"
+                                        Visibility="{Binding SelectedWebDavConnection, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock Text="文件浏览器（测试功能）" 
+                                                   FontSize="14" FontWeight="SemiBold"
+                                                   Margin="0,0,0,10"/>
+                                        <Button Content="浏览文件" 
+                                                Command="{Binding BrowseWebDavFilesCommand}"
+                                                Style="{StaticResource SecondaryButton}"
+                                                Padding="15,8" Margin="0,0,0,10"/>
+                                        <ListBox ItemsSource="{Binding RemoteFiles}"
+                                                 MaxHeight="150"
+                                                 Background="White"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- 状态栏 -->
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                Padding="10" Margin="0,10,0,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💡 " FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               Foreground="{DynamicResource TextSecondaryBrush}" 
+                               VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+                <Button Content="关闭" 
+                        Style="{StaticResource SecondaryButton}"
+                        Padding="20,8"
+                        HorizontalAlignment="Right"
+                        Click="CloseButton_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

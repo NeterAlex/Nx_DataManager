@@ -4,29 +4,35 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="500">
+             d:DesignHeight="500" d:DesignWidth="500">
     
-    <!-- 任务卡片 -->
-    <Border Width="360" Height="Auto" MaxHeight="220" Margin="10"
+    <!-- 任务卡片 - 更现代化的设计 -->
+    <Border Width="370" Height="Auto" MaxHeight="315" Margin="10"
             Background="{DynamicResource SurfaceBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
             BorderThickness="1"
-            CornerRadius="12"
-            Cursor="Hand">
+            CornerRadius="16"
+            Cursor="Hand"
+            Visibility="{Binding Visibility}">
+        <Border.Effect>
+            <DropShadowEffect Color="{DynamicResource ShadowColor}" 
+                              BlurRadius="16" 
+                              ShadowDepth="2" 
+                              Opacity="0.08" 
+                              Direction="270"/>
+        </Border.Effect>
+        
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="Effect">
-                    <Setter.Value>
-                        <DropShadowEffect Color="#40000000" BlurRadius="12" 
-                                          ShadowDepth="2" Opacity="0.3" Direction="270"/>
-                    </Setter.Value>
-                </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Effect">
                             <Setter.Value>
-                                <DropShadowEffect Color="#60000000" BlurRadius="16" 
-                                                  ShadowDepth="4" Opacity="0.4" Direction="270"/>
+                                <DropShadowEffect Color="{DynamicResource ShadowColor}" 
+                                                  BlurRadius="24" 
+                                                  ShadowDepth="4" 
+                                                  Opacity="0.12" 
+                                                  Direction="270"/>
                             </Setter.Value>
                         </Setter>
                     </Trigger>
@@ -41,125 +47,227 @@
         </Border.InputBindings>
 
         <Grid>
-            <!-- 顶部彩色条 -->
-            <Border Height="6" VerticalAlignment="Top"
-                    Background="{DynamicResource PrimaryBrush}"
-                    CornerRadius="12,12,0,0"/>
+            <!-- 顶部渐变条 -->
+            <Border Height="4" VerticalAlignment="Top"
+                    Background="{DynamicResource PrimaryGradientBrush}"
+                    CornerRadius="16,16,0,0"/>
 
-            <StackPanel Margin="16,16,16,12">
+            <StackPanel Margin="20,16,20,16">
                 <!-- 标题和状态 -->
-                <Grid Margin="0,0,0,10">
-                    <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="Bold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               TextTrimming="CharacterEllipsis"/>
+                <Grid Margin="0,0,0,12">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}" 
+                                   FontSize="17" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding BackupType}" 
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
                     
                     <Border Background="{DynamicResource SuccessBrush}" 
-                            CornerRadius="4" Padding="8,4"
+                            CornerRadius="8" Padding="10,5"
                             HorizontalAlignment="Right" VerticalAlignment="Top">
                         <TextBlock Text="{Binding Status}" FontSize="11" 
                                    Foreground="White" FontWeight="SemiBold"/>
                     </Border>
                 </Grid>
 
-                <!-- 路径信息 -->
-                <StackPanel Margin="0,0,0,10">
-                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}">
-                        <Run Text="📁 源:"/>
-                        <Run Text="{Binding SourcePath}" FontWeight="SemiBold"/>
-                    </TextBlock>
-                    <TextBlock FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0">
-                        <Run Text="💾 目标:"/>
-                        <Run Text="{Binding DestinationPath}" FontWeight="SemiBold"/>
-                    </TextBlock>
-                </StackPanel>
-
-                <!-- 任务信息标签 -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <Border Background="{DynamicResource AccentBrush}" 
-                            CornerRadius="4" Padding="8,4" Margin="0,0,6,0">
-                        <TextBlock Text="{Binding BackupType}" FontSize="11" 
-                                   Foreground="White" FontWeight="SemiBold"/>
-                    </Border>
-                    
-                    <Border Background="{DynamicResource PrimaryBrush}" 
-                            CornerRadius="4" Padding="8,4" Margin="0,0,6,0"
-                            Visibility="{Binding EnableCompression, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Text="🗜️ 压缩" FontSize="11" 
-                                   Foreground="White" FontWeight="SemiBold"/>
-                    </Border>
-                    
-                    <Border Background="{DynamicResource WarningBrush}" 
-                            CornerRadius="4" Padding="8,4" Margin="0,0,6,0"
-                            Visibility="{Binding EnableEncryption, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Text="🔐 加密" FontSize="11" 
-                                   Foreground="White" FontWeight="SemiBold"/>
-                    </Border>
-                    
-                    <Border Background="#9C27B0" 
-                            CornerRadius="4" Padding="8,4" Margin="0,0,6,0"
-                            Visibility="{Binding EnableVersionControl, Converter={StaticResource BoolToVisibilityConverter}}"
-                            ToolTip="{Binding KeepVersionCount, StringFormat='保留 {0} 个版本'}">
-                        <TextBlock Text="📂 版本" FontSize="11" 
-                                   Foreground="White" FontWeight="SemiBold"/>
-                    </Border>
-                </StackPanel>
-
-                <!-- 计划任务状态 -->
-                <Border Background="#F3F4F6" 
-                        BorderBrush="{DynamicResource BorderBrush}" 
-                        BorderThickness="1"
-                        CornerRadius="6" Padding="8,6" Margin="0,0,0,10"
-                        Visibility="{Binding Schedule.Type, Converter={StaticResource NotManualScheduleConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <TextBlock Grid.Column="0" Text="⏰" FontSize="14" 
-                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        
-                        <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}">
-                                <Run Text="计划:"/>
-                                <Run Text="{Binding Schedule.Type, Converter={StaticResource ScheduleTypeDisplayConverter}}" 
-                                     FontWeight="SemiBold" Foreground="{DynamicResource PrimaryBrush}"/>
-                            </TextBlock>
-                            <TextBlock FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" 
-                                       Margin="0,2,0,0"
-                                       Visibility="{Binding NextRunTime, Converter={StaticResource NullToVisibilityConverter}}">
-                                <Run Text="下次:"/>
-                                <Run Text="{Binding NextRunTime, StringFormat='{}{0:MM-dd HH:mm}'}" 
-                                     FontWeight="SemiBold"/>
+                <!-- 路径信息 - 使用图标 -->
+                <StackPanel Margin="0,0,0,12">
+                    <Border Background="{DynamicResource SurfaceVariantBrush}"
+                            CornerRadius="8" Padding="10,8" Margin="0,0,0,6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="12" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center">
+                                <Run Text="源:"/>
+                                <Run Text="{Binding SourcePath}" FontWeight="SemiBold"/>
                             </TextBlock>
                         </StackPanel>
-                    </Grid>
+                    </Border>
+                    
+                    <Border Background="{DynamicResource SurfaceVariantBrush}"
+                            CornerRadius="8" Padding="10,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xEDA2;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource SuccessBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="12" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center">
+                                <Run Text="目标:"/>
+                                <Run Text="{Binding DestinationPath}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- 功能标签 -->
+                <WrapPanel Margin="0,0,0,10" >
+                    <Border Background="{DynamicResource Primary100}" 
+                            CornerRadius="6" Padding="10,5" Margin="0,0,6,6"
+                            Visibility="{Binding EnableCompression, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE7B8;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="压缩" FontSize="11" 
+                                       Foreground="{DynamicResource PrimaryBrush}" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Background="#FEF3C7" 
+                            CornerRadius="6" Padding="10,5" Margin="0,0,6,6"
+                            Visibility="{Binding EnableEncryption, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72E;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource WarningBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="加密" FontSize="11" 
+                                       Foreground="{DynamicResource WarningBrush}" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Background="#F3E8FF" 
+                            CornerRadius="6" Padding="10,5" Margin="0,0,6,6"
+                            Visibility="{Binding EnableVersionControl, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="{Binding KeepVersionCount, StringFormat='保留 {0} 个版本'}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE8B5;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="#9333EA"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="版本" FontSize="11" 
+                                       Foreground="#9333EA" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 带宽限制标签 -->
+                    <Border Background="#DBEAFE" 
+                            CornerRadius="6" Padding="10,5" Margin="0,0,6,6"
+                            Visibility="{Binding EnableBandwidthLimit, Converter={StaticResource BoolToVisibilityConverter}}"
+                            ToolTip="{Binding BandwidthLimitMBps, StringFormat='限速 {0} MB/s'}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE895;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="#2563EB"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock FontSize="11" 
+                                       Foreground="#2563EB" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center">
+                                <Run Text="限速"/>
+                                <Run Text="{Binding BandwidthLimitMBps, StringFormat='{}{0}MB/s'}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 断点续传标签 -->
+                    <Border Background="#D1FAE5" 
+                            CornerRadius="6" Padding="10,5" Margin="0,0,6,6"
+                            Visibility="{Binding EnableResumable, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72C;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="#059669"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="续传" FontSize="11" 
+                                       Foreground="#059669" 
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <!-- 计划任务状态 -->
+                <Border Background="{DynamicResource SurfaceVariantBrush}" 
+                        BorderBrush="{DynamicResource BorderBrush}" 
+                        BorderThickness="1"
+                        CornerRadius="10" Padding="12,10" Margin="0,0,0,12"
+                        Visibility="{Binding Schedule.Type, Converter={StaticResource NotManualScheduleConverter}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="&#xE823;" FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="14" 
+                                       Foreground="{DynamicResource InfoBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="12" 
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center">
+                                <Run Text="计划:"/>
+                                <Run Text="{Binding Schedule.Type, Converter={StaticResource ScheduleTypeDisplayConverter}}" 
+                                     FontWeight="SemiBold" 
+                                     Foreground="{DynamicResource PrimaryBrush}"/>
+                            </TextBlock>
+                        </StackPanel>
+                        <TextBlock FontSize="11" 
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   Visibility="{Binding NextRunTime, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Run Text="下次执行:"/>
+                            <Run Text="{Binding NextRunTime, StringFormat='{}{0:MM-dd HH:mm}'}" 
+                                 FontWeight="SemiBold"/>
+                        </TextBlock>
+                    </StackPanel>
                 </Border>
 
                 <!-- 底部操作按钮 -->
                 <Grid>
                     <StackPanel Orientation="Horizontal">
-                        <Button Content="▶️ 运行" 
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.StartBackupCommand}"
+                        <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.StartBackupCommand}"
                                 CommandParameter="{Binding}"
-                                Style="{StaticResource IconButtonStyleInCard}"
-                                Padding="2,6" FontSize="12" Margin="0,0,6,0"
-                                ToolTip="立即运行此备份任务"/>
-                        <Button Content="✏️ 编辑"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EditTaskCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                Padding="12,8" FontSize="12" Margin="0,0,8,0"
+                                ToolTip="立即运行此备份任务">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE768;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="运行" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.EditTaskCommand}"
                                 CommandParameter="{Binding}"
-                                Style="{StaticResource IconButtonStyleInCard}"
-                                Padding="2,6" FontSize="12"
-                                ToolTip="编辑任务配置"/>
+                                Style="{StaticResource SecondaryButton}"
+                                Padding="12,8" FontSize="12"
+                                ToolTip="编辑任务配置">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE70F;" FontFamily="{StaticResource FluentIcons}"
+                                           FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="编辑" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
 
-                    <!-- 状态显示（只读） -->
+                    <!-- 状态显示 -->
                     <Border HorizontalAlignment="Right" VerticalAlignment="Center"
                             Background="{Binding IsEnabled, Converter={StaticResource BoolToStatusColorConverter}}"
-                            CornerRadius="12" Padding="10,4">
-                        <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BoolToTextConverter}, ConverterParameter='✓ 启用|✕ 禁用'}" 
-                                   FontSize="11" FontWeight="SemiBold"
-                                   Foreground="White"/>
+                            CornerRadius="12" Padding="12,6">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BoolToTextConverter}, ConverterParameter='&#xE73E;|&#xE711;'}" 
+                                       FontFamily="{StaticResource FluentIcons}"
+                                       FontSize="12" 
+                                       Foreground="White"
+                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding IsEnabled, Converter={StaticResource BoolToTextConverter}, ConverterParameter='启用|禁用'}" 
+                                       FontSize="11" FontWeight="SemiBold"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </StackPanel>

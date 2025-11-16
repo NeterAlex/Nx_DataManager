@@ -53,6 +53,40 @@ public partial class MainViewModel : ObservableObject
         _schedulerService = schedulerService;
         _notificationService = notificationService;
         _serviceProvider = serviceProvider;
+        
+        // 监听 BackupTasks 集合的变化
+        BackupTasks.CollectionChanged += (s, e) =>
+        {
+            // 当集合发生变化时，更新 EnabledTasksCount
+            OnPropertyChanged(nameof(EnabledTasksCount));
+            
+            // 为新添加的任务订阅 IsEnabled 属性变化
+            if (e.NewItems != null)
+            {
+                foreach (BackupTask task in e.NewItems)
+                {
+                    task.PropertyChanged += Task_PropertyChanged;
+                }
+            }
+            
+            // 为移除的任务取消订阅
+            if (e.OldItems != null)
+            {
+                foreach (BackupTask task in e.OldItems)
+                {
+                    task.PropertyChanged -= Task_PropertyChanged;
+                }
+            }
+        };
+    }
+    
+    private void Task_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // 当任何任务的 IsEnabled 属性变化时，更新 EnabledTasksCount
+        if (e.PropertyName == nameof(BackupTask.IsEnabled))
+        {
+            OnPropertyChanged(nameof(EnabledTasksCount));
+        }
     }
 
     /// <summary>
@@ -81,6 +115,9 @@ public partial class MainViewModel : ObservableObject
             await _schedulerService.StartAsync();
             StatusMessage = $"已加载 {tasks.Count} 个备份任务";
             _notificationService.ShowInfo("欢迎使用", "NxDataManager 备份管理器已启动");
+            
+            // 通知 EnabledTasksCount 属性更改
+            OnPropertyChanged(nameof(EnabledTasksCount));
         }
         catch (Exception ex)
         {
@@ -208,6 +245,9 @@ public partial class MainViewModel : ObservableObject
             BackupTasks.Remove(SelectedTask);
             StatusMessage = "任务已删除";
             _notificationService.ShowInfo("任务已删除", $"任务 \"{taskName}\" 已删除");
+            
+            // 通知属性更改
+            OnPropertyChanged(nameof(EnabledTasksCount));
         }
         catch (Exception ex)
         {
@@ -488,17 +528,24 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task ViewHistory()
     {
-        if (SelectedTask == null) return;
-
         try
         {
-            var histories = await _backupService.GetBackupHistoryAsync(SelectedTask.Id);
-            StatusMessage = $"找到 {histories.Count} 条历史记录";
-            // TODO: 显示历史记录窗口
+            // 直接打开备份历史窗口，显示所有任务的历史记录
+            var viewModel = new BackupHistoryViewModel(
+                _backupService,
+                _storageService,
+                _notificationService,
+                _serviceProvider.GetRequiredService<IReportExportService>());
+            
+            var window = new Views.BackupHistoryWindow(viewModel);
+            window.ShowDialog();
+            
+            StatusMessage = "已打开备份历史窗口";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"查询历史失败: {ex.Message}";
+            StatusMessage = $"打开历史窗口失败: {ex.Message}";
+            _notificationService.ShowError("错误", $"打开历史窗口失败: {ex.Message}");
         }
     }
 
@@ -578,6 +625,36 @@ public partial class MainViewModel : ObservableObject
         {
             StatusMessage = $"打开执行历史窗口失败: {ex.Message}";
             _notificationService.ShowError("错误", $"打开执行历史窗口失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenRemoteConnection()
+    {
+        try
+        {
+            var remoteConnectionWindow = _serviceProvider.GetRequiredService<RemoteConnectionWindow>();
+            remoteConnectionWindow.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"打开远程连接窗口失败: {ex.Message}";
+            _notificationService.ShowError("错误", $"打开远程连接窗口失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenDashboard()
+    {
+        try
+        {
+            var dashboardWindow = _serviceProvider.GetRequiredService<DashboardWindow>();
+            dashboardWindow.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"打开仪表盘失败: {ex.Message}";
+            _notificationService.ShowError("错误", $"打开仪表盘失败: {ex.Message}");
         }
     }
 }

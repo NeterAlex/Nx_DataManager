@@ -472,4 +472,501 @@ public class ReportExportService : IReportExportService
         }
         return $"{len:0.##} {sizes[order]}";
     }
+
+    public async Task ExportHistoryToCsvAsync(List<BackupHistory> histories, string outputPath)
+    {
+        var csv = new StringBuilder();
+        
+        // CSV 表头
+        csv.AppendLine("日期,任务名称,备份类型,状态,文件总数,成功文件,失败文件,总大小,耗时,平均速度,源路径,目标路径,错误信息");
+        
+        // CSV 数据行
+        foreach (var history in histories.OrderByDescending(h => h.StartTime))
+        {
+            var duration = history.EndTime.HasValue 
+                ? (history.EndTime.Value - history.StartTime).ToString(@"hh\:mm\:ss")
+                : "N/A";
+                
+            var speed = history.Duration.TotalSeconds > 0
+                ? $"{history.AverageSpeed:F2} MB/s"
+                : "N/A";
+                
+            var errorMsg = history.ErrorMessage?.Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", " ") ?? "";
+            
+            csv.AppendLine($"\"{history.StartTime:yyyy-MM-dd HH:mm:ss}\"," +
+                          $"\"{history.TaskName}\"," +
+                          $"\"{history.BackupType}\"," +
+                          $"\"{history.Status}\"," +
+                          $"{history.TotalFiles}," +
+                          $"{history.SuccessFiles}," +
+                          $"{history.FailedFiles}," +
+                          $"\"{FormatBytes(history.TotalSize)}\"," +
+                          $"\"{duration}\"," +
+                          $"\"{speed}\"," +
+                          $"\"{history.SourcePath}\"," +
+                          $"\"{history.DestinationPath}\"," +
+                          $"\"{errorMsg}\"");
+        }
+        
+        await File.WriteAllTextAsync(outputPath, csv.ToString(), Encoding.UTF8);
+    }
+
+    public async Task ExportHistoryToPdfAsync(List<BackupHistory> histories, string outputPath)
+    {
+        // 创建 HTML 报告，然后转换为 PDF（需要额外的库）
+        // 这里先生成 HTML 报告作为替代
+        var html = new StringBuilder();
+        
+        html.AppendLine("<!DOCTYPE html>");
+        html.AppendLine("<html>");
+        html.AppendLine("<head>");
+        html.AppendLine("<meta charset='utf-8'>");
+        html.AppendLine("<title>备份历史报告</title>");
+        html.AppendLine("<style>");
+        html.AppendLine(@"
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                margin: 40px;
+                background: #f5f5f5;
+            }
+            .container {
+                max-width: 1400px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            h1 {
+                color: #333;
+                border-bottom: 3px solid #4CAF50;
+                padding-bottom: 10px;
+            }
+            .summary {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 20px;
+                margin: 30px 0;
+            }
+            .stat-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                text-align: center;
+            }
+            .stat-card.success {
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            }
+            .stat-card.error {
+                background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
+            }
+            .stat-card.info {
+                background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            }
+            .stat-card.warning {
+                background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            }
+            .stat-value {
+                font-size: 32px;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+            .stat-label {
+                font-size: 14px;
+                opacity: 0.9;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th {
+                background: #4CAF50;
+                color: white;
+                padding: 12px;
+                text-align: left;
+                font-size: 13px;
+            }
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+                font-size: 12px;
+            }
+            tr:hover {
+                background: #f9f9f9;
+            }
+            .status-badge {
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: bold;
+                font-size: 11px;
+            }
+            .status-completed {
+                background: #C8E6C9;
+                color: #2E7D32;
+            }
+            .status-failed {
+                background: #FFCDD2;
+                color: #C62828;
+            }
+            .status-cancelled {
+                background: #FFE0B2;
+                color: #E65100;
+            }
+            .footer {
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+                text-align: center;
+                color: #999;
+                font-size: 12px;
+            }
+        ");
+        html.AppendLine("</style>");
+        html.AppendLine("</head>");
+        html.AppendLine("<body>");
+        html.AppendLine("<div class='container'>");
+        
+        // 标题
+        html.AppendLine("<h1>📊 备份历史报告</h1>");
+        html.AppendLine($"<p style='color: #999;'>生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}</p>");
+        
+        // 统计摘要
+        var totalHistories = histories.Count;
+        var successCount = histories.Count(h => h.Status == BackupStatus.Completed);
+        var failureCount = histories.Count(h => h.Status == BackupStatus.Failed);
+        var totalSize = histories.Sum(h => h.TotalSize);
+        var avgSpeed = histories.Where(h => h.Duration.TotalSeconds > 0)
+                                .Average(h => h.AverageSpeed);
+        
+        html.AppendLine("<div class='summary'>");
+        html.AppendLine($@"
+            <div class='stat-card'>
+                <div class='stat-label'>总记录数</div>
+                <div class='stat-value'>{totalHistories}</div>
+            </div>
+            <div class='stat-card success'>
+                <div class='stat-label'>成功</div>
+                <div class='stat-value'>{successCount}</div>
+            </div>
+            <div class='stat-card error'>
+                <div class='stat-label'>失败</div>
+                <div class='stat-value'>{failureCount}</div>
+            </div>
+            <div class='stat-card info'>
+                <div class='stat-label'>总大小</div>
+                <div class='stat-value'>{FormatBytes(totalSize)}</div>
+            </div>
+            <div class='stat-card warning'>
+                <div class='stat-label'>平均速度</div>
+                <div class='stat-value'>{avgSpeed:F1} MB/s</div>
+            </div>
+        ");
+        html.AppendLine("</div>");
+        
+        // 详细表格
+        html.AppendLine("<h2>📋 详细记录</h2>");
+        html.AppendLine("<table>");
+        html.AppendLine("<tr>");
+        html.AppendLine("<th>日期</th>");
+        html.AppendLine("<th>任务名称</th>");
+        html.AppendLine("<th>类型</th>");
+        html.AppendLine("<th>状态</th>");
+        html.AppendLine("<th>文件数</th>");
+        html.AppendLine("<th>大小</th>");
+        html.AppendLine("<th>耗时</th>");
+        html.AppendLine("<th>速度</th>");
+        html.AppendLine("</tr>");
+        
+        foreach (var history in histories.OrderByDescending(h => h.StartTime))
+        {
+            var statusClass = history.Status switch
+            {
+                BackupStatus.Completed => "status-completed",
+                BackupStatus.Failed => "status-failed",
+                BackupStatus.Cancelled => "status-cancelled",
+                _ => ""
+            };
+            
+            var duration = history.EndTime.HasValue 
+                ? (history.EndTime.Value - history.StartTime).ToString(@"hh\:mm\:ss")
+                : "N/A";
+                
+            var speed = history.Duration.TotalSeconds > 0
+                ? $"{history.AverageSpeed:F2} MB/s"
+                : "N/A";
+            
+            html.AppendLine("<tr>");
+            html.AppendLine($"<td>{history.StartTime:yyyy-MM-dd HH:mm}</td>");
+            html.AppendLine($"<td>{history.TaskName}</td>");
+            html.AppendLine($"<td>{history.BackupType}</td>");
+            html.AppendLine($"<td><span class='status-badge {statusClass}'>{history.Status}</span></td>");
+            html.AppendLine($"<td>{history.SuccessFiles}/{history.TotalFiles}</td>");
+            html.AppendLine($"<td>{FormatBytes(history.TotalSize)}</td>");
+            html.AppendLine($"<td>{duration}</td>");
+            html.AppendLine($"<td>{speed}</td>");
+            html.AppendLine("</tr>");
+        }
+        
+        html.AppendLine("</table>");
+        
+        // 页脚
+        html.AppendLine("<div class='footer'>");
+        html.AppendLine("<p>此报告由 NxDataManager 备份管理器自动生成</p>");
+        html.AppendLine($"<p>© {DateTime.Now.Year} NxDataManager. All rights reserved.</p>");
+        html.AppendLine("</div>");
+        
+        html.AppendLine("</div>");
+        html.AppendLine("</body>");
+        html.AppendLine("</html>");
+        
+        // 暂时保存为 HTML（完整的 PDF 需要额外的库）
+        var htmlPath = outputPath.Replace(".pdf", ".html");
+        await File.WriteAllTextAsync(htmlPath, html.ToString(), Encoding.UTF8);
+        
+        // TODO: 使用 HTML to PDF 转换库（如 IronPdf, SelectPdf）将 HTML 转换为 PDF
+        throw new NotImplementedException($"PDF 导出功能开发中，已生成 HTML 报告: {htmlPath}");
+    }
+
+    public async Task ExportHistoryToHtmlAsync(List<BackupHistory> histories, string outputPath)
+    {
+        var html = new StringBuilder();
+        
+        html.AppendLine("<!DOCTYPE html>");
+        html.AppendLine("<html>");
+        html.AppendLine("<head>");
+        html.AppendLine("<meta charset='utf-8'>");
+        html.AppendLine("<title>备份历史报告</title>");
+        html.AppendLine("<style>");
+        html.AppendLine(@"
+            body {
+                font-family: 'Segoe UI', Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            .container {
+                max-width: 1400px;
+                margin: 40px auto;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                overflow: hidden;
+            }
+            .header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0 0 10px 0;
+                font-size: 36px;
+            }
+            .header p {
+                margin: 0;
+                opacity: 0.9;
+                font-size: 14px;
+            }
+            .summary {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0;
+                border-bottom: 1px solid #ddd;
+            }
+            .stat-card {
+                padding: 30px;
+                text-align: center;
+                border-right: 1px solid #ddd;
+            }
+            .stat-card:last-child {
+                border-right: none;
+            }
+            .stat-value {
+                font-size: 36px;
+                font-weight: bold;
+                margin: 10px 0;
+                color: #667eea;
+            }
+            .stat-card.success .stat-value { color: #4CAF50; }
+            .stat-card.error .stat-value { color: #f44336; }
+            .stat-card.info .stat-value { color: #2196F3; }
+            .stat-card.warning .stat-value { color: #FF9800; }
+            .stat-label {
+                font-size: 14px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .content {
+                padding: 40px;
+            }
+            h2 {
+                color: #333;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #667eea;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th {
+                background: #f5f5f5;
+                color: #333;
+                padding: 15px 12px;
+                text-align: left;
+                font-size: 13px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+                font-size: 13px;
+            }
+            tr:hover {
+                background: #f9f9f9;
+            }
+            .status-badge {
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .status-completed {
+                background: #C8E6C9;
+                color: #2E7D32;
+            }
+            .status-failed {
+                background: #FFCDD2;
+                color: #C62828;
+            }
+            .status-cancelled {
+                background: #FFE0B2;
+                color: #E65100;
+            }
+            .footer {
+                background: #f5f5f5;
+                padding: 30px;
+                text-align: center;
+                color: #999;
+                font-size: 12px;
+                border-top: 1px solid #ddd;
+            }
+            .footer p {
+                margin: 5px 0;
+            }
+        ");
+        html.AppendLine("</style>");
+        html.AppendLine("</head>");
+        html.AppendLine("<body>");
+        html.AppendLine("<div class='container'>");
+        
+        // 标题栏
+        html.AppendLine("<div class='header'>");
+        html.AppendLine("<h1>📊 备份历史报告</h1>");
+        html.AppendLine($"<p>生成时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}</p>");
+        html.AppendLine("</div>");
+        
+        // 统计摘要
+        var totalHistories = histories.Count;
+        var successCount = histories.Count(h => h.Status == BackupStatus.Completed);
+        var failureCount = histories.Count(h => h.Status == BackupStatus.Failed);
+        var totalSize = histories.Sum(h => h.TotalSize);
+        var avgSpeed = histories.Any(h => h.Duration.TotalSeconds > 0)
+            ? histories.Where(h => h.Duration.TotalSeconds > 0).Average(h => h.AverageSpeed)
+            : 0;
+        
+        html.AppendLine("<div class='summary'>");
+        html.AppendLine($@"
+            <div class='stat-card'>
+                <div class='stat-label'>总记录数</div>
+                <div class='stat-value'>{totalHistories}</div>
+            </div>
+            <div class='stat-card success'>
+                <div class='stat-label'>成功</div>
+                <div class='stat-value'>{successCount}</div>
+            </div>
+            <div class='stat-card error'>
+                <div class='stat-label'>失败</div>
+                <div class='stat-value'>{failureCount}</div>
+            </div>
+            <div class='stat-card info'>
+                <div class='stat-label'>总大小</div>
+                <div class='stat-value'>{FormatBytes(totalSize)}</div>
+            </div>
+            <div class='stat-card warning'>
+                <div class='stat-label'>平均速度</div>
+                <div class='stat-value'>{avgSpeed:F1}<br/><span style='font-size:14px;'>MB/s</span></div>
+            </div>
+        ");
+        html.AppendLine("</div>");
+        
+        // 详细内容
+        html.AppendLine("<div class='content'>");
+        html.AppendLine("<h2>📋 详细记录</h2>");
+        html.AppendLine("<table>");
+        html.AppendLine("<tr>");
+        html.AppendLine("<th>日期时间</th>");
+        html.AppendLine("<th>任务名称</th>");
+        html.AppendLine("<th>备份类型</th>");
+        html.AppendLine("<th>状态</th>");
+        html.AppendLine("<th>文件数</th>");
+        html.AppendLine("<th>总大小</th>");
+        html.AppendLine("<th>耗时</th>");
+        html.AppendLine("<th>平均速度</th>");
+        html.AppendLine("</tr>");
+        
+        foreach (var history in histories.OrderByDescending(h => h.StartTime))
+        {
+            var statusClass = history.Status switch
+            {
+                BackupStatus.Completed => "status-completed",
+                BackupStatus.Failed => "status-failed",
+                BackupStatus.Cancelled => "status-cancelled",
+                _ => ""
+            };
+            
+            var duration = history.EndTime.HasValue 
+                ? (history.EndTime.Value - history.StartTime).ToString(@"hh\:mm\:ss")
+                : "N/A";
+                
+            var speed = history.Duration.TotalSeconds > 0
+                ? $"{history.AverageSpeed:F2} MB/s"
+                : "N/A";
+            
+            html.AppendLine("<tr>");
+            html.AppendLine($"<td>{history.StartTime:yyyy-MM-dd HH:mm:ss}</td>");
+            html.AppendLine($"<td><strong>{history.TaskName}</strong></td>");
+            html.AppendLine($"<td>{history.BackupType}</td>");
+            html.AppendLine($"<td><span class='status-badge {statusClass}'>{history.Status}</span></td>");
+            html.AppendLine($"<td>{history.SuccessFiles}/{history.TotalFiles}</td>");
+            html.AppendLine($"<td>{FormatBytes(history.TotalSize)}</td>");
+            html.AppendLine($"<td>{duration}</td>");
+            html.AppendLine($"<td>{speed}</td>");
+            html.AppendLine("</tr>");
+        }
+        
+        html.AppendLine("</table>");
+        html.AppendLine("</div>");
+        
+        // 页脚
+        html.AppendLine("<div class='footer'>");
+        html.AppendLine("<p><strong>NxDataManager 备份管理器</strong></p>");
+        html.AppendLine($"<p>© {DateTime.Now.Year} NxDataManager. All rights reserved.</p>");
+        html.AppendLine("<p>此报告由系统自动生成</p>");
+        html.AppendLine("</div>");
+        
+        html.AppendLine("</div>");
+        html.AppendLine("</body>");
+        html.AppendLine("</html>");
+        
+        await File.WriteAllTextAsync(outputPath, html.ToString(), Encoding.UTF8);
+    }
 }

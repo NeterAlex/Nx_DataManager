@@ -1,8 +1,8 @@
-﻿using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NxDataManager.Services;
 using NxDataManager.ViewModels;
 using NxDataManager.Views;
+using System.Windows;
 
 namespace NxDataManager
 {
@@ -24,7 +24,7 @@ namespace NxDataManager
         {
             // 注册SQLite数据库上下文
             services.AddSingleton<Data.DatabaseContext>();
-            
+
             // 注册基础服务 - 使用SQLite存储
             services.AddSingleton<IStorageService, SqliteStorageService>();
             services.AddSingleton<INotificationService, ToastNotificationService>();
@@ -47,6 +47,9 @@ namespace NxDataManager
             services.AddSingleton<IStorageAnalysisService, StorageAnalysisService>();
             services.AddSingleton<IReportExportService, ReportExportService>();
 
+            // 注册远程连接服务
+            services.AddSingleton<RemoteConnectionStorageService>();
+
             // 注册ViewModels
             services.AddSingleton<MainViewModel>();
             services.AddTransient<BackupTaskDetailViewModel>();
@@ -54,12 +57,15 @@ namespace NxDataManager
             services.AddTransient<ProgressViewModel>();
             services.AddTransient<RestoreViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<DashboardViewModel>();
 
             // 注册Windows
             services.AddSingleton<MainWindow>();
             services.AddTransient<RestoreWindow>();
             services.AddTransient<SettingsWindow>();
             services.AddTransient<TaskEditorWindow>();
+            services.AddTransient<RemoteConnectionWindow>();
+            services.AddTransient<DashboardWindow>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)
@@ -70,7 +76,7 @@ namespace NxDataManager
             System.Diagnostics.Debug.WriteLine("🔄 检查数据迁移...");
             var migrationService = new Data.DataMigrationService();
             var migrationResult = await migrationService.MigrateFromJsonAsync();
-            
+
             if (migrationResult.IsSuccess)
             {
                 System.Diagnostics.Debug.WriteLine($"✅ {migrationResult.Message}");
@@ -94,5 +100,4 @@ namespace NxDataManager
             base.OnExit(e);
         }
     }
-
 }

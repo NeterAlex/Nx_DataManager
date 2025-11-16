@@ -124,6 +124,20 @@ public class SqliteStorageService : IStorageService
         }
     }
 
+    public async Task DeleteBackupHistoryAsync(Guid historyId)
+    {
+        try
+        {
+            await _historyRepository.DeleteAsync(historyId);
+            System.Diagnostics.Debug.WriteLine($"✅ 从SQLite删除历史记录: {historyId}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ 删除历史记录失败: {ex.Message}");
+            throw;
+        }
+    }
+
     #endregion
 
     #region 文件备份记录管理
