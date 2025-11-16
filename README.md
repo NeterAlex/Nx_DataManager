@@ -6,6 +6,7 @@
 
 Nx DataManager 是一款文件备份管理软件，提供全面的数据备份功能，支持多种备份策略、远程存储、版本控制和备份调度等功能。基于 WPF 框架、MVVM架构和 .NET 10 平台构建。
 
+![image](https://github.com/NeterAlex/Nx_DataManager/blob/master/static/preview.png)
 
 ## 核心功能
 
